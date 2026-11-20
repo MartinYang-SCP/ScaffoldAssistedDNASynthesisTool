@@ -26,3 +26,6 @@ gitkey_*
 sshkey_for_github.txt
 .ssh/
 .ssh_known_hosts
+
+# 本机工具生成的残留
+*ssh_known_hosts
