@@ -20,3 +20,9 @@ desktop.ini
 # 本机 SSH 私钥绝不入库（见 README 的 git 说明）
 .ssh/
 *.pem
+
+# ---- 本机凭据（绝不入库）----
+gitkey_*
+sshkey_for_github.txt
+.ssh/
+.ssh_known_hosts
