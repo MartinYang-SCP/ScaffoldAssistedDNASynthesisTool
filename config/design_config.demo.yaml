@@ -1,0 +1,41 @@
+# ============================================================================
+# 演示配置：目标序列是**合成序列**（data/target.fasta），仅用于跑通流程。
+#   python main.py --config config/design_config.demo.yaml
+# 真实设计请复制 design_config.yaml，把下面每个 null 填上真实值。
+# ============================================================================
+schema: scaffold_staple_design/design_config/v1
+is_demo: true
+
+scaffold:
+  file: data/scaffold.dna
+  strand: "+"          # 演示用；真实值待 Q2 确认
+  topology: circular
+
+staple:
+  scaffold_binding_length: 13
+  target_binding_length: 26
+  total_length: 39
+  group_pattern: "AB"
+  domain_order: "5p_target_26"
+  covered_start: 0
+
+target:
+  source: data/target.fasta
+  groups: [A, B]
+  group_boundaries: [364]
+  # suggest_oligo_cuts(728, seams=26k, 40..120) 给出的建议值
+  oligo_cuts: [108, 212, 316, 420, 524, 628]
+  topology: circular
+  boundary_count: 2
+  five_prime_phosphate: "no"
+  intended_ligation: false
+
+analysis:
+  tm: true
+  na_mM: 50.0
+  mg_mM: 0.0
+  dnac_nM: 250.0
+  temperature_c: 37.0
+
+output:
+  outdir: outputs/demo

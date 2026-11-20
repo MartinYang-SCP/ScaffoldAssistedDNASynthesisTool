@@ -1,0 +1,11 @@
+﻿feature_type,label,start,end,strand,note,kind,segment_index,segment_count,length,wraps,origin,raw_range,sequence
+rep_origin,ori,78,667,-,high-copy-number ColE1/pMB1/pBR322/pUC origin of replication,annotation,1,1,589,,file,79-667,
+CDS,BleoR,691,1066,-,"confers resistance to bleomycin, phleomycin, and Zeocin™",annotation,1,1,375,,file,692-1066,
+misc_feature,MCS,0,37,.,pUC18/19 multiple cloning site,annotation,1,1,37,,file,1-37,
+misc_feature,MCS,1181,1200,.,pUC18/19 multiple cloning site,annotation,1,1,19,,file,1182-1200,
+misc_feature,cexuf1,1146,1166,.,,annotation,1,1,20,,file,1147-1166,
+primer_bind,测序-f2,,,.,结合位点未回贴（backend=raw）,primer,1,1,,,file,,CCGCGCTCTGCTGAAGCCAG
+primer_bind,F2,,,.,结合位点未回贴（backend=raw）,primer,1,1,,,file,,AACACATGTGTTTTTCCATAGGCTCCGCCCCCCTGACGAGCATCACAAAAATCGACGCTCAAGTCAGAGGTGGCGAAACCCGACAGGACTATAAAGATACCAGGCGTTTCCCCCTGGAAG
+primer_bind,R10,,,.,结合位点未回贴（backend=raw）,primer,1,1,,,file,,AGTCGACCTGCAGGCATGCAAGCTTGGCCATGGGTTAACCCATATGGCCTCGCGACGCGTTATGTATCCGCTCATGAGACAATAACCCTGATAAATGCTTCAATAATATTGAAAAGGAAG
+primer_bind,R1,,,.,结合位点未回贴（backend=raw）,primer,1,1,,,file,,GAGCGTCGATTTTTGTGATGCTCGTCAGGGGGGCGGAGCCTATGGAAAAACACATGTGTTTAAACGGGCCCACTGTCTCGAGGATATCCGAATTCGAGCTCGGTACCCGGGATCCTCTAG
+primer_bind,F1,,,.,结合位点未回贴（backend=raw）,primer,1,1,,,file,,ACGCGTCGCGAGGCCATATGGGTTAACCCATGGCCAAGCTTGCATGCCTGCAGGTCGACTCTAGAGGATCCCGGGTACCGAGCTCGAATTCGGATATCCTCGAGACAGTGGGCCCGTTTA

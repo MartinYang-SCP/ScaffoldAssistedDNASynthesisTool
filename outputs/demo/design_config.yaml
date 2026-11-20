@@ -1,0 +1,39 @@
+schema: scaffold_staple_design/design_config/v1
+scaffold:
+  file: data/scaffold.dna
+  strand: +
+  topology: circular
+staple:
+  scaffold_binding_length: 13
+  target_binding_length: 26
+  total_length: 39
+  group_pattern: AB
+  domain_order: 5p_target_26
+  covered_start: 0
+target:
+  source: data/target.fasta
+  groups:
+  - A
+  - B
+  group_boundaries:
+  - 364
+  oligo_cuts:
+  - 108
+  - 212
+  - 316
+  - 420
+  - 524
+  - 628
+  topology: circular
+  boundary_count: 2
+  five_prime_phosphate: 'no'
+  intended_ligation: false
+analysis:
+  tm: true
+  na_mM: 50.0
+  mg_mM: 0.0
+  dnac_nM: 250.0
+  temperature_c: 37.0
+output:
+  outdir: outputs/demo
+is_demo: true

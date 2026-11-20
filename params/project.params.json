@@ -1,0 +1,132 @@
+{
+  "_schema": "scaffold_staple_design/project_params/v1",
+  "_status": "PHASE0_GEOMETRY_CONFIRMED_V3",
+  "_convention": "所有坐标 0-based 左闭右开 [start, end)；环状序列允许 end > length 表示跨越原点。",
+  "_null_means": "null = 现有材料无法确定，必须由用户明确给出。校验器遇到 null 会拒绝运行，不会代入任何默认值。",
+  "_reason": "对应 docs/00_结构理解与待确认问题.md 的 §9 参数表与 §10 提问清单。",
+  "inputs": {
+    "scaffold_file": "minimalplasmid(1).dna",
+    "scaffold_length": 1200,
+    "scaffold_file_sha256": "eef30e740c58425a3138b8234a777783d8a9a437afe73db2f68a151614aa6304",
+    "scaffold_sequence_sha256": "8ad0aa525c975ce4c572df7429b3f343646fff78c9387d5b04fe9340d70989dc",
+    "_note": "文件 hash 会随 SnapGene 重新保存而变（容器块会被重写），序列 hash 才是判定同一条序列的依据；校验用后者。2026-11-19 12:20 文件被重新保存过一次：字节数 22716→22586，但序列、5 条注释坐标、5 条引物结合位点全部未变。"
+  },
+  "scaffold": {
+    "strand": null,
+    "_strand_options": [
+      "+",
+      "-"
+    ],
+    "_strand_reason": "文件是双链质粒，无法判断实验室提供的环状单链是正链还是负链（Q2）",
+    "region": "whole",
+    "_region_options": [
+      null,
+      "[start, end)"
+    ],
+    "_region_reason": "null 表示整段 1200 nt 即 scaffold；若只有子区段需给出区间（Q3）",
+    "covered_arc": null,
+    "_covered_arc_reason": "覆盖长度 C = 13n，由 staple 条数决定；具体起止坐标待长度确定后给出",
+    "redundancy_policy": null
+  },
+  "geometry": {
+    "target_vs_scaffold": "antiparallel",
+    "_target_vs_scaffold_options": [
+      "antiparallel",
+      "parallel"
+    ],
+    "_geometry_reason": "决定 staple 序列的拼接方向与坐标推进方向；见文档 §8 的 M1 与图 3（Q1，最高优先级）",
+    "staple_domain_order": "5p_target_26",
+    "_staple_domain_order_options": [
+      "5p_target_26",
+      "5p_scaffold_13"
+    ],
+    "_order_reason": "26 nt 与 13 nt 在同一条链上的先后顺序（Q5）",
+    "junction_geometry": "phosphodiester_turn",
+    "_junction_geometry_options": [
+      "u_turn",
+      "rung"
+    ],
+    "_junction_geometry_reason": "U 形折返（两个 duplex 反向平行）还是横档式（同向平行，需要 helix 间切换）（Q1）"
+  },
+  "staple": {
+    "length_total": 39,
+    "length_scaffold_domain": 13,
+    "length_target_domain": 26,
+    "scaffold_pitch": 13,
+    "_scaffold_pitch_reason": "相邻 staple 的结合位点间隔（结合 13 nt + 空隙 N nt），决定 staple 条数与覆盖密度（Q6）",
+    "max_count": null,
+    "allow_scaffold_domain_overlap": false,
+    "allow_target_domain_overlap": false,
+    "target_pitch": 26,
+    "tiling": "contiguous_no_gap"
+  },
+  "target": {
+    "group_A_length": null,
+    "_group_A_reason": "图中标注的 266 bp 是否指 A 区段长度（Q7）",
+    "group_B_length": null,
+    "_group_B_reason": "图中标注的 126 bp 是否指 B 区段长度（Q7）",
+    "circle_length": null,
+    "_circle_reason": "闭合后目标环总长；若 A+B 即全长则等于两者之和（Q8）",
+    "oligo_count_per_group": null,
+    "oligo_length_range": null,
+    "nick_positions": null,
+    "nick_policy": "must_not_fall_in_staple_gap",
+    "_nick_policy_source": "需求原文：目标片段的 nick 不能与 staple 间的空隙重合；目标片段应 cover 至少一个两 staple 间的缝隙",
+    "length_multiple_of": 26,
+    "relation_to_scaffold": "L_target_total = 2 * C_covered = 26*(a+b)",
+    "length_rule": "L(A)=26*a, L(B)=26*b, a+b=n, |a-b|<=1（13+13 交替铺满的必然结果）",
+    "length_ratio_note": "2026-11-18 用户确认：266/126 是草图误差，从未进入设计；按 L(A)≈L(B) 处理"
+  },
+  "junctions": {
+    "count": 2,
+    "J1": {
+      "left_segment": null,
+      "left_end": null,
+      "right_segment": null,
+      "right_end": null,
+      "bond_state": null,
+      "_bond_state_options": [
+        "nick",
+        "ligated",
+        "designed_only"
+      ],
+      "boundary_oligo_length": null
+    },
+    "J2": {
+      "left_segment": null,
+      "left_end": null,
+      "right_segment": null,
+      "right_end": null,
+      "bond_state": null,
+      "boundary_oligo_length": null
+    },
+    "_note": "需求原文只固定了『A 的尾部 3′ 与 B 的首端 5′ 相连』这一种组合；另一个交界的方向需要按闭合环推出（Q9）"
+  },
+  "chemistry": {
+    "five_prime_phosphate_on_target": null,
+    "_reason": "化学合成 oligo 默认 5′-OH，连接前需磷酸化；直接影响 nick 表里的 5′-P 状态（Q10）",
+    "ligation_planned": null,
+    "kinase_treatment": null
+  },
+  "analysis": {
+    "buffer_na_mM": null,
+    "buffer_mg_mM": null,
+    "temperature_c": null,
+    "oligo_concentration_nM": null,
+    "secondary_structure_threshold_kcal": null,
+    "external_tools_allowed": null
+  },
+  "output": {
+    "csv_columns": "default",
+    "excel_sheets": "default",
+    "fasta_header": "default",
+    "coordinate_note_in_output": true
+  },
+  "_resolved_note": "2026-11-17 用户确认：箭头=存储方向；scaffold 装配时 3'->5' 左->右；A/B 均 5'->3' 左->右；13+13 交替铺满；折返=磷酸二酯键",
+  "_open_questions_v2": [
+    "scaffold 是正链还是负链（Q2 待定）",
+    "目标序列最终选哪一段（若用 yEGFP CDS：720 nt，需补到 26 的倍数 728 → A 364 + B 364）",
+    "两个交界在装配体中的物理相遇位置（本轮先按'只做序列覆盖'处理）",
+    "是否 5' 磷酸化 / 是否 ligase 封口"
+  ]
+}

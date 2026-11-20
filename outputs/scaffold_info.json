@@ -1,0 +1,190 @@
+{
+  "schema": "scaffold_staple_design/scaffold_info/v1",
+  "id": "minimalplasmid_1",
+  "source": "D:\\THU\\大四上\\核酸纳米材料\\小课题\\minimalplasmid(1).dna",
+  "file_sha256": "eef30e740c58425a3138b8234a777783d8a9a437afe73db2f68a151614aa6304",
+  "sequence_sha256": "8ad0aa525c975ce4c572df7429b3f343646fff78c9387d5b04fe9340d70989dc",
+  "parser_backend": "raw",
+  "length": 1200,
+  "topology": "circular",
+  "molecule_type": "DNA",
+  "molecule_type_source": "default（内置解析器不解码 molecule_type）",
+  "gc_content": 0.578333,
+  "sequence_class": "UNA",
+  "features": [
+    {
+      "feature_type": "rep_origin",
+      "label": "ori",
+      "strand": "-",
+      "kind": "annotation",
+      "origin": "file",
+      "start": 78,
+      "end": 667,
+      "total_length": 589,
+      "segments": [
+        {
+          "start": 78,
+          "end": 667,
+          "length": 589,
+          "wraps": false,
+          "raw_range": "79-667",
+          "origin": "file"
+        }
+      ],
+      "qualifiers": {
+        "direction": "LEFT",
+        "note": "high-copy-number ColE1/pMB1/pBR322/pUC origin of replication"
+      }
+    },
+    {
+      "feature_type": "CDS",
+      "label": "BleoR",
+      "strand": "-",
+      "kind": "annotation",
+      "origin": "file",
+      "start": 691,
+      "end": 1066,
+      "total_length": 375,
+      "segments": [
+        {
+          "start": 691,
+          "end": 1066,
+          "length": 375,
+          "wraps": false,
+          "raw_range": "692-1066",
+          "origin": "file"
+        }
+      ],
+      "qualifiers": {
+        "codon_start": "1",
+        "gene": "Sh ble from Streptoalloteichus hindustanus",
+        "note": "confers resistance to bleomycin, phleomycin, and Zeocin™",
+        "product": "antibiotic-binding protein",
+        "transl_table": "1",
+        "translation": "MAKLTSAVPVLTARDVAGAVEFWTDRLGFSRDFVEDDFAGVVRDDVTLFISAVQDQVVPDNTLAWVWVRGLDELYAEWSEVVSTNFRDASGPAMTEIGEQPWGREFALRDPAGNCVHFVAEEQD*"
+      }
+    },
+    {
+      "feature_type": "misc_feature",
+      "label": "MCS",
+      "strand": ".",
+      "kind": "annotation",
+      "origin": "file",
+      "start": 0,
+      "end": 37,
+      "total_length": 37,
+      "segments": [
+        {
+          "start": 0,
+          "end": 37,
+          "length": 37,
+          "wraps": false,
+          "raw_range": "1-37",
+          "origin": "file"
+        }
+      ],
+      "qualifiers": {
+        "gene": "",
+        "note": "pUC18/19 multiple cloning site"
+      }
+    },
+    {
+      "feature_type": "misc_feature",
+      "label": "MCS",
+      "strand": ".",
+      "kind": "annotation",
+      "origin": "file",
+      "start": 1181,
+      "end": 1200,
+      "total_length": 19,
+      "segments": [
+        {
+          "start": 1181,
+          "end": 1200,
+          "length": 19,
+          "wraps": false,
+          "raw_range": "1182-1200",
+          "origin": "file"
+        }
+      ],
+      "qualifiers": {
+        "gene": "",
+        "note": "pUC18/19 multiple cloning site"
+      }
+    },
+    {
+      "feature_type": "misc_feature",
+      "label": "cexuf1",
+      "strand": ".",
+      "kind": "annotation",
+      "origin": "file",
+      "start": 1146,
+      "end": 1166,
+      "total_length": 20,
+      "segments": [
+        {
+          "start": 1146,
+          "end": 1166,
+          "length": 20,
+          "wraps": false,
+          "raw_range": "1147-1166",
+          "origin": "file"
+        }
+      ],
+      "qualifiers": {}
+    }
+  ],
+  "primers": [
+    {
+      "name": "测序-f2",
+      "sequence": "CCGCGCTCTGCTGAAGCCAG",
+      "site_origin": "derived",
+      "site": []
+    },
+    {
+      "name": "F2",
+      "sequence": "AACACATGTGTTTTTCCATAGGCTCCGCCCCCCTGACGAGCATCACAAAAATCGACGCTCAAGTCAGAGGTGGCGAAACCCGACAGGACTATAAAGATACCAGGCGTTTCCCCCTGGAAG",
+      "site_origin": "derived",
+      "site": []
+    },
+    {
+      "name": "R10",
+      "sequence": "AGTCGACCTGCAGGCATGCAAGCTTGGCCATGGGTTAACCCATATGGCCTCGCGACGCGTTATGTATCCGCTCATGAGACAATAACCCTGATAAATGCTTCAATAATATTGAAAAGGAAG",
+      "site_origin": "derived",
+      "site": []
+    },
+    {
+      "name": "R1",
+      "sequence": "GAGCGTCGATTTTTGTGATGCTCGTCAGGGGGGCGGAGCCTATGGAAAAACACATGTGTTTAAACGGGCCCACTGTCTCGAGGATATCCGAATTCGAGCTCGGTACCCGGGATCCTCTAG",
+      "site_origin": "derived",
+      "site": []
+    },
+    {
+      "name": "F1",
+      "sequence": "ACGCGTCGCGAGGCCATATGGGTTAACCCATGGCCAAGCTTGCATGCCTGCAGGTCGACTCTAGAGGATCCCGGGTACCGAGCTCGAATTCGGATATCCTCGAGACAGTGGGCCCGTTTA",
+      "site_origin": "derived",
+      "site": []
+    }
+  ],
+  "notes": {
+    "UUID": "d6f69b30-ce1a-48e4-be18-1d03b672c24b",
+    "Type": "Synthetic",
+    "ConfirmedExperimentally": "0",
+    "Created": "2021.3.14",
+    "Created@UTC": "12:41:13",
+    "LastModified": "2023.12.19",
+    "LastModified@UTC": "12:58:23",
+    "CreatedBy": "Macapp",
+    "SequenceClass": "UNA",
+    "TransformedInto": "unspecified"
+  },
+  "cross_check": {},
+  "warnings": [],
+  "coordinate_convention": "坐标均为 0-based 左闭右开 [start, end)；跨原点时 start > end 且 wraps=True",
+  "scaffold_region_interpretation": {
+    "scaffold_region": null,
+    "scaffold_strand": null,
+    "note": "本模块只报告文件里写了什么，不判断哪一段才是实验室实际使用的环状单链 scaffold。该决定必须由用户在 params 中显式给出。"
+  },
+  "sequence": "TCGACTCTAGAGGATCCCGGGTACCGAGCTCGAATTCGGATATCCTCGAGACAGTGGGCCCGTTTAAACACATGTGTTTTTCCATAGGCTCCGCCCCCCTGACGAGCATCACAAAAATCGACGCTCAAGTCAGAGGTGGCGAAACCCGACAGGACTATAAAGATACCAGGCGTTTCCCCCTGGAAGCTCCCTCGTGCGCTCTCCTGTTCCGACCCTGCCGCTTACCGGATACCTGTCCGCCTTTCTCCCTTCGGGAAGCGTGGCGCTTTCTCATAGCTCACGCTGTAGGTATCTCAGTTCGGTGTAGGTCGTTCGCTCCAAGCTGGGCTGTGTGCACGAACCCCCCGTTCAGCCCGACCGCTGCGCCTTATCCGGTAACTATCGTCTTGAGTCCAACCCGGTAAGACACGACTTATCGCCACTGGCAGCAGCCACTGGTAACAGGATTAGCAGAGCGAGGTATGTAGGCGGTGCTACAGAGTTCTTGAAGTGGTGGCCTAACTACGGCTACACTAGAAGAACAGTATTTGGTATCCGCGCTCTGCTGAAGCCAGTTACCTTCGGAAAAAGAGTTGGTAGCTCTTGATCCGGCAAACAAACCACCGCTGGTAGCGGTGGTTTTTTTGTTTGCAAGCAGCAGATTACGCGCAGGAAAAAAGGATCTCAAGAAGATCCTTTGATCTTTTCTACGTCAGTCCTGCTCCTCGGCCACGAAGTGCACGCAGTTGCCGGCCGGGTCGCGCAGGGCGAACTCCCGCCCCCACGGCTGCTCGCCGATCTCGGTCATGGCCGGCCCGGAGGCGTCCCGGAAGTTCGTGGACACGACCTCCGACCACTCGGCGTACAGCTCGTCCAGGCCGCGCACCCACACCCAGGCCAGGGTGTTGTCCGGCACCACCTGGTCCTGGACCGCGCTGATGAACAGGGTCACGTCGTCCCGGACCACACCGGCGAAGTCGTCCTCCACGAAGTCCCGGGAGAACCCGAGCCGGTCGGTCCAGAACTCGACCGCTCCGGCGACGTCGCGCGCGGTGAGCACCGGAACGGCACTGGTCAACTTGGCCATACTCAAGCGATCTATCCTTTCTTCCTTTTCAATATTATTGAAGCATTTATCAGGGTTATTGTCTCATGAGCGGATACATAACGCGTCGCGAGGCCATATGGGTTAACCCATGGCCAAGCTTGCATGCCTGCAGG"
+}

@@ -1,0 +1,544 @@
+{
+  "schema": "scaffold_staple_design/assembly_structure/v1",
+  "placeholder_sequences": true,
+  "assumptions": {
+    "staple_domain_order": "5p_target_26（26 nt 在 5′ 侧，13 nt 在 3′ 侧）",
+    "scaffold_physical_orientation": "装配体中 scaffold 为 3′→5′，目标为 5′→3′",
+    "junction_is_not_a_nick": "A/B 交界由 boundary-spanning oligo 连续覆盖"
+  },
+  "target": {
+    "topology": "circular",
+    "length": 390,
+    "regions": [
+      {
+        "region_id": "target_A",
+        "group": "A",
+        "start": 0,
+        "end": 208,
+        "length": 208,
+        "strand": "+",
+        "placeholder": true
+      },
+      {
+        "region_id": "target_B",
+        "group": "B",
+        "start": 208,
+        "end": 390,
+        "length": 182,
+        "strand": "+",
+        "placeholder": true
+      }
+    ],
+    "oligo_order": [
+      "T01",
+      "T02",
+      "T03",
+      "T04",
+      "T05",
+      "T06",
+      "T07"
+    ]
+  },
+  "scaffold": {
+    "length": 1200,
+    "topology": "circular",
+    "covered_start": 0,
+    "covered_length": 195,
+    "uncovered_length": 1005,
+    "covered_arc": [
+      0,
+      195
+    ]
+  },
+  "staples": [
+    {
+      "staple_id": "S01",
+      "group": "A",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 182,
+      "scaffold_end": 195,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 0,
+      "target_end": 26,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    },
+    {
+      "staple_id": "S02",
+      "group": "B",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 169,
+      "scaffold_end": 182,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 208,
+      "target_end": 234,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    },
+    {
+      "staple_id": "S03",
+      "group": "A",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 156,
+      "scaffold_end": 169,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 26,
+      "target_end": 52,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    },
+    {
+      "staple_id": "S04",
+      "group": "B",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 143,
+      "scaffold_end": 156,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 234,
+      "target_end": 260,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    },
+    {
+      "staple_id": "S05",
+      "group": "A",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 130,
+      "scaffold_end": 143,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 52,
+      "target_end": 78,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    },
+    {
+      "staple_id": "S06",
+      "group": "B",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 117,
+      "scaffold_end": 130,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 260,
+      "target_end": 286,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    },
+    {
+      "staple_id": "S07",
+      "group": "A",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 104,
+      "scaffold_end": 117,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 78,
+      "target_end": 104,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    },
+    {
+      "staple_id": "S08",
+      "group": "B",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 91,
+      "scaffold_end": 104,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 286,
+      "target_end": 312,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    },
+    {
+      "staple_id": "S09",
+      "group": "A",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 78,
+      "scaffold_end": 91,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 104,
+      "target_end": 130,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    },
+    {
+      "staple_id": "S10",
+      "group": "B",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 65,
+      "scaffold_end": 78,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 312,
+      "target_end": 338,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    },
+    {
+      "staple_id": "S11",
+      "group": "A",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 52,
+      "scaffold_end": 65,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 130,
+      "target_end": 156,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    },
+    {
+      "staple_id": "S12",
+      "group": "B",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 39,
+      "scaffold_end": 52,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 338,
+      "target_end": 364,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    },
+    {
+      "staple_id": "S13",
+      "group": "A",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 26,
+      "scaffold_end": 39,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 156,
+      "target_end": 182,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    },
+    {
+      "staple_id": "S14",
+      "group": "B",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 13,
+      "scaffold_end": 26,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 364,
+      "target_end": 390,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    },
+    {
+      "staple_id": "S15",
+      "group": "A",
+      "domain_order": "5p_target_26",
+      "total_length": 39,
+      "scaffold_start": 0,
+      "scaffold_end": 13,
+      "scaffold_length": 13,
+      "scaffold_wraps": false,
+      "scaffold_strand": "-",
+      "target_start": 182,
+      "target_end": 208,
+      "target_length": 26,
+      "target_strand": "-",
+      "placeholder": true
+    }
+  ],
+  "staples_by_group": {
+    "A": [
+      "S01",
+      "S03",
+      "S05",
+      "S07",
+      "S09",
+      "S11",
+      "S13",
+      "S15"
+    ],
+    "B": [
+      "S02",
+      "S04",
+      "S06",
+      "S08",
+      "S10",
+      "S12",
+      "S14"
+    ]
+  },
+  "oligos": [
+    {
+      "oligo_id": "T01",
+      "group": "A",
+      "oligo_type": "ordinary",
+      "target_start": 30,
+      "target_end": 70,
+      "length": 40,
+      "strand": "+",
+      "regions": [
+        "target_A"
+      ],
+      "five_prime_modification": "unknown",
+      "three_prime_modification": "OH"
+    },
+    {
+      "oligo_id": "T02",
+      "group": "A",
+      "oligo_type": "ordinary",
+      "target_start": 70,
+      "target_end": 140,
+      "length": 70,
+      "strand": "+",
+      "regions": [
+        "target_A"
+      ],
+      "five_prime_modification": "unknown",
+      "three_prime_modification": "OH"
+    },
+    {
+      "oligo_id": "T03",
+      "group": "A",
+      "oligo_type": "ordinary",
+      "target_start": 140,
+      "target_end": 190,
+      "length": 50,
+      "strand": "+",
+      "regions": [
+        "target_A"
+      ],
+      "five_prime_modification": "unknown",
+      "three_prime_modification": "OH"
+    },
+    {
+      "oligo_id": "T04",
+      "group": "A",
+      "oligo_type": "boundary_spanning",
+      "target_start": 190,
+      "target_end": 226,
+      "length": 36,
+      "strand": "+",
+      "regions": [
+        "target_A",
+        "target_B"
+      ],
+      "five_prime_modification": "unknown",
+      "three_prime_modification": "OH"
+    },
+    {
+      "oligo_id": "T05",
+      "group": "B",
+      "oligo_type": "ordinary",
+      "target_start": 226,
+      "target_end": 280,
+      "length": 54,
+      "strand": "+",
+      "regions": [
+        "target_B"
+      ],
+      "five_prime_modification": "unknown",
+      "three_prime_modification": "OH"
+    },
+    {
+      "oligo_id": "T06",
+      "group": "B",
+      "oligo_type": "ordinary",
+      "target_start": 280,
+      "target_end": 350,
+      "length": 70,
+      "strand": "+",
+      "regions": [
+        "target_B"
+      ],
+      "five_prime_modification": "unknown",
+      "three_prime_modification": "OH"
+    },
+    {
+      "oligo_id": "T07",
+      "group": "B",
+      "oligo_type": "boundary_spanning",
+      "target_start": 350,
+      "target_end": 420,
+      "length": 70,
+      "strand": "+",
+      "regions": [
+        "target_A",
+        "target_B"
+      ],
+      "five_prime_modification": "unknown",
+      "three_prime_modification": "OH"
+    }
+  ],
+  "boundary_spanning_oligos": [
+    "T04",
+    "T07"
+  ],
+  "junctions": [
+    {
+      "junction_id": "J1",
+      "position": 208,
+      "upstream_group": "A",
+      "upstream_end": "3'",
+      "downstream_group": "B",
+      "downstream_end": "5'",
+      "covered_by": "T04",
+      "bond_state": "within_oligo"
+    },
+    {
+      "junction_id": "J2",
+      "position": 0,
+      "upstream_group": "A",
+      "upstream_end": "3'",
+      "downstream_group": "B",
+      "downstream_end": "5'",
+      "covered_by": "T07",
+      "bond_state": "within_oligo"
+    }
+  ],
+  "nicks": [
+    {
+      "nick_id": "N1",
+      "upstream_oligo": "T01",
+      "upstream_end": "3'",
+      "downstream_oligo": "T02",
+      "downstream_end": "5'",
+      "genomic_or_target_position": 70,
+      "five_prime_phosphate": "unknown",
+      "three_prime_hydroxyl": "yes",
+      "intended_ligation": false,
+      "bonded": false
+    },
+    {
+      "nick_id": "N2",
+      "upstream_oligo": "T02",
+      "upstream_end": "3'",
+      "downstream_oligo": "T03",
+      "downstream_end": "5'",
+      "genomic_or_target_position": 140,
+      "five_prime_phosphate": "unknown",
+      "three_prime_hydroxyl": "yes",
+      "intended_ligation": false,
+      "bonded": false
+    },
+    {
+      "nick_id": "N3",
+      "upstream_oligo": "T03",
+      "upstream_end": "3'",
+      "downstream_oligo": "T04",
+      "downstream_end": "5'",
+      "genomic_or_target_position": 190,
+      "five_prime_phosphate": "unknown",
+      "three_prime_hydroxyl": "yes",
+      "intended_ligation": false,
+      "bonded": false
+    },
+    {
+      "nick_id": "N4",
+      "upstream_oligo": "T04",
+      "upstream_end": "3'",
+      "downstream_oligo": "T05",
+      "downstream_end": "5'",
+      "genomic_or_target_position": 226,
+      "five_prime_phosphate": "unknown",
+      "three_prime_hydroxyl": "yes",
+      "intended_ligation": false,
+      "bonded": false
+    },
+    {
+      "nick_id": "N5",
+      "upstream_oligo": "T05",
+      "upstream_end": "3'",
+      "downstream_oligo": "T06",
+      "downstream_end": "5'",
+      "genomic_or_target_position": 280,
+      "five_prime_phosphate": "unknown",
+      "three_prime_hydroxyl": "yes",
+      "intended_ligation": false,
+      "bonded": false
+    },
+    {
+      "nick_id": "N6",
+      "upstream_oligo": "T06",
+      "upstream_end": "3'",
+      "downstream_oligo": "T07",
+      "downstream_end": "5'",
+      "genomic_or_target_position": 350,
+      "five_prime_phosphate": "unknown",
+      "three_prime_hydroxyl": "yes",
+      "intended_ligation": false,
+      "bonded": false
+    },
+    {
+      "nick_id": "N7",
+      "upstream_oligo": "T07",
+      "upstream_end": "3'",
+      "downstream_oligo": "T01",
+      "downstream_end": "5'",
+      "genomic_or_target_position": 30,
+      "five_prime_phosphate": "unknown",
+      "three_prime_hydroxyl": "yes",
+      "intended_ligation": false,
+      "bonded": false
+    }
+  ],
+  "checks": [
+    {
+      "level": "note",
+      "code": "placeholder_sequences",
+      "message": "占位模式：所有序列都是 N，互补性与热力学未评估（本任务只验证结构表示）"
+    },
+    {
+      "level": "note",
+      "code": "not_covalently_closed",
+      "message": "目标链是环状但尚未共价闭合：所有 nick 的 intended_ligation 都为 False（序列被连续覆盖 ≠ 已经连成环）"
+    }
+  ],
+  "error_count": 0,
+  "circle_closed": false
+}

@@ -1,0 +1,22 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 本机构建/临时目录（含 DSH 沙箱不可读的 pip 缓存）
+build/
+
+# 测试与工具缓存
+.pytest_cache/
+.mypy_cache/
+
+# 系统
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 本机 SSH 私钥绝不入库（见 README 的 git 说明）
+.ssh/
+*.pem

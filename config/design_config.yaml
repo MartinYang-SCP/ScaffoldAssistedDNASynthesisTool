@@ -1,0 +1,49 @@
+# ============================================================================
+# 设计配置模板 —— 直接跑这个文件会**在第 3 步停下**，并列出所有 null 项。
+# 想要跑通流程请用 design_config.demo.yaml（里面是合成序列）。
+# ============================================================================
+schema: scaffold_staple_design/design_config/v1
+
+scaffold:
+  file: data/scaffold.dna
+  # 实验室提供的环状单链对应文件里的正链（+）还是负链（-）。
+  # 选错会让所有 13 nt 臂全部反向，必须实测确认。
+  strand: null
+  topology: circular
+
+staple:
+  # 可用配置调整；total_length 必须等于两者之和，否则引擎报错
+  scaffold_binding_length: 13
+  target_binding_length: 26
+  total_length: 39
+  # 13 nt 块的分组循环；"AB" = 严格交替
+  group_pattern: "AB"
+  # 26 nt 在 5′ 侧还是 13 nt 在 5′ 侧
+  domain_order: "5p_target_26"
+  # 覆盖区在 scaffold 上的起点（决定相位，可用 --scan-phase 挑 Tm 最均匀的）
+  covered_start: 0
+
+target:
+  # FASTA 路径；null = 还没定目标序列
+  source: null
+  groups: [A, B]
+  # A/B 分界（目标坐标）：[364] 表示 A=[0,364)、B=[364,728)
+  group_boundaries: null
+  # 目标坐标上的 nick 位置；不要落在 26 nt 臂接缝上
+  # 可用 suggest_oligo_cuts() 生成建议（只建议，需你确认）
+  oligo_cuts: null
+  topology: circular
+  boundary_count: 2
+  # 合成 oligo 默认 5′-OH
+  five_prime_phosphate: null
+  intended_ligation: null
+
+analysis:
+  tm: true
+  na_mM: 50.0
+  mg_mM: 0.0
+  dnac_nM: 250.0
+  temperature_c: null
+
+output:
+  outdir: outputs/design

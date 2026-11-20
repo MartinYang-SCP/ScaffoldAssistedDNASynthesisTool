@@ -1,0 +1,112 @@
+{
+  "schema": "scaffold_staple_design/validation_report/v1",
+  "status": "PASS",
+  "validated_directory": "outputs\\demo",
+  "input_files": {
+    "target": "b4d4dae1d4d35adfc504c27f827dc55abeefac681e9128e7252d1165dec00f5e",
+    "scaffold": "803f2c845b21d11b00d8cb46a9e72f2843b0e61977041e58d4a1b51d3007fb0d",
+    "oligos": "837d860aee0b387058a9539393061cbbc1adae04b7fe597b825b02573a844fb2",
+    "staples": "591d30b4a0a0a564afc9539b0478e57d3024efd5b5606eba1a89f86637366831",
+    "nicks": "97e59ac9d56e58aceb7dd74b4cd9da6563c0f9b6a8959fd2ea787b6ad93cbfba"
+  },
+  "topology": "circular",
+  "counts": {
+    "oligos": 6,
+    "boundary_oligos": 2,
+    "staples": 28,
+    "nicks": 6,
+    "issues": {
+      "error": 0,
+      "warning": 0,
+      "info": 0
+    }
+  },
+  "coverage": {
+    "target_length": 728,
+    "covered_bases": 728,
+    "uncovered_bases": 0,
+    "overlapping_bases": 0,
+    "coverage_fraction": 1.0,
+    "topology": "circular"
+  },
+  "checks": [
+    {
+      "name": "sequence_basics",
+      "status": "pass",
+      "issues": 0
+    },
+    {
+      "name": "target_coverage",
+      "status": "pass",
+      "issues": 0
+    },
+    {
+      "name": "group_order",
+      "status": "pass",
+      "issues": 0
+    },
+    {
+      "name": "boundary_spanning",
+      "status": "pass",
+      "issues": 0
+    },
+    {
+      "name": "staple_length",
+      "status": "pass",
+      "issues": 0
+    },
+    {
+      "name": "scaffold_mapping",
+      "status": "pass",
+      "issues": 0
+    },
+    {
+      "name": "target_binding",
+      "status": "pass",
+      "issues": 0
+    },
+    {
+      "name": "nicks",
+      "status": "pass",
+      "issues": 0
+    }
+  ],
+  "issues": [],
+  "thermo": {
+    "idt_oligoanalyzer": {
+      "status": "not_run",
+      "input_file": "idt_oligoanalyzer_input.csv",
+      "what_it_would_check": [
+        "GC content",
+        "Tm",
+        "hairpin",
+        "self-dimer",
+        "hetero-dimer"
+      ],
+      "how_to_run": [
+        "打开 IDT OligoAnalyzer (https://www.idtdna.com/calc/analyzer)",
+        "批量模式粘贴 idt_oligoanalyzer_input.csv 的 sequence 列（或逐条粘贴）",
+        "参数：Oligo conc 0.25 µM，Na+ 50 mM，Mg++ 0 mM（与本项目配置一致）",
+        "导出 Analyze 结果，按 oligo_id 回填到本报告"
+      ],
+      "caveat": "这些工具只算二级结构与杂交倾向，不能验证连接化学，也不能预测支架组装效率"
+    },
+    "nupack": {
+      "status": "not_run",
+      "input_file": "nupack_strands.txt",
+      "what_it_would_check": [
+        "多链竞争性杂交",
+        "替代配对",
+        "复合物平衡浓度"
+      ],
+      "how_to_run": [
+        "nupack 需单独安装（pip install nupack 或官网学术版）",
+        "把 nupack_strands.txt 作为链列表，跑 complexes / mfe",
+        "建议只用同一组的 staple + 目标片段做小体系，全体系规模太大"
+      ],
+      "caveat": "NUPACK 不模拟 DNA 连接酶，也不模拟 scaffold 的拓扑约束"
+    },
+    "not_claimed": "本模块没有运行上述任一工具，报告里没有它们的结果"
+  },
+  "independence": "本模块只读 target.fasta / scaffold_working.fasta / 三张 CSV / design_report.json，不 import 生成器的内部对象"
+}

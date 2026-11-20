@@ -1,0 +1,668 @@
+{
+  "schema": "scaffold_staple_design/design_report/v1",
+  "status": "OK",
+  "config": {
+    "schema": "scaffold_staple_design/design_config/v1",
+    "scaffold": {
+      "file": "data/scaffold.dna",
+      "strand": "+",
+      "topology": "circular"
+    },
+    "staple": {
+      "scaffold_binding_length": 13,
+      "target_binding_length": 26,
+      "total_length": 39,
+      "group_pattern": "AB",
+      "domain_order": "5p_target_26",
+      "covered_start": 0
+    },
+    "target": {
+      "source": "data/target.fasta",
+      "groups": [
+        "A",
+        "B"
+      ],
+      "group_boundaries": [
+        364
+      ],
+      "oligo_cuts": [
+        108,
+        212,
+        316,
+        420,
+        524,
+        628
+      ],
+      "topology": "circular",
+      "boundary_count": 2,
+      "five_prime_phosphate": "no",
+      "intended_ligation": false
+    },
+    "analysis": {
+      "tm": true,
+      "na_mM": 50.0,
+      "mg_mM": 0.0,
+      "dnac_nM": 250.0,
+      "temperature_c": 37.0
+    },
+    "output": {
+      "outdir": "outputs/demo"
+    },
+    "is_demo": true
+  },
+  "inputs": {
+    "scaffold_source": "D:\\THU\\大四上\\核酸纳米材料\\小课题\\data\\scaffold.dna",
+    "scaffold_file_sha256": "eef30e740c58425a3138b8234a777783d8a9a437afe73db2f68a151614aa6304",
+    "scaffold_sequence_sha256": "8ad0aa525c975ce4c572df7429b3f343646fff78c9387d5b04fe9340d70989dc",
+    "scaffold_strand": "+",
+    "working_sequence_sha256": "8ad0aa525c975ce4c572df7429b3f343646fff78c9387d5b04fe9340d70989dc",
+    "target_length": 728,
+    "target_sequence_sha256": "0f128a44da60b8987c8254963c5ec9393251f77a182aa680b9e353daddfd80a6"
+  },
+  "regions": [
+    {
+      "region_id": "target_A",
+      "group": "A",
+      "start": 0,
+      "end": 364,
+      "length": 364
+    },
+    {
+      "region_id": "target_B",
+      "group": "B",
+      "start": 364,
+      "end": 728,
+      "length": 364
+    }
+  ],
+  "target_oligos": [
+    {
+      "oligo_id": "T01",
+      "group": "A",
+      "oligo_type": "ordinary",
+      "target_start": 108,
+      "target_end": 212,
+      "length": 104,
+      "strand": "+",
+      "crosses_junction": false,
+      "five_prime_modification": "no",
+      "three_prime_modification": "OH"
+    },
+    {
+      "oligo_id": "T02",
+      "group": "A",
+      "oligo_type": "ordinary",
+      "target_start": 212,
+      "target_end": 316,
+      "length": 104,
+      "strand": "+",
+      "crosses_junction": false,
+      "five_prime_modification": "no",
+      "three_prime_modification": "OH"
+    },
+    {
+      "oligo_id": "T03",
+      "group": "A",
+      "oligo_type": "boundary_spanning",
+      "target_start": 316,
+      "target_end": 420,
+      "length": 104,
+      "strand": "+",
+      "crosses_junction": true,
+      "five_prime_modification": "no",
+      "three_prime_modification": "OH"
+    },
+    {
+      "oligo_id": "T04",
+      "group": "B",
+      "oligo_type": "ordinary",
+      "target_start": 420,
+      "target_end": 524,
+      "length": 104,
+      "strand": "+",
+      "crosses_junction": false,
+      "five_prime_modification": "no",
+      "three_prime_modification": "OH"
+    },
+    {
+      "oligo_id": "T05",
+      "group": "B",
+      "oligo_type": "ordinary",
+      "target_start": 524,
+      "target_end": 628,
+      "length": 104,
+      "strand": "+",
+      "crosses_junction": false,
+      "five_prime_modification": "no",
+      "three_prime_modification": "OH"
+    },
+    {
+      "oligo_id": "T06",
+      "group": "B",
+      "oligo_type": "boundary_spanning",
+      "target_start": 628,
+      "target_end": 836,
+      "length": 208,
+      "strand": "+",
+      "crosses_junction": true,
+      "five_prime_modification": "no",
+      "three_prime_modification": "OH"
+    }
+  ],
+  "staples": [
+    {
+      "staple_id": "S01",
+      "group": "A",
+      "scaffold_start": 351,
+      "scaffold_end": 364,
+      "scaffold_length": 13,
+      "target_start": 0,
+      "target_end": 26,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S02",
+      "group": "B",
+      "scaffold_start": 338,
+      "scaffold_end": 351,
+      "scaffold_length": 13,
+      "target_start": 364,
+      "target_end": 390,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S03",
+      "group": "A",
+      "scaffold_start": 325,
+      "scaffold_end": 338,
+      "scaffold_length": 13,
+      "target_start": 26,
+      "target_end": 52,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S04",
+      "group": "B",
+      "scaffold_start": 312,
+      "scaffold_end": 325,
+      "scaffold_length": 13,
+      "target_start": 390,
+      "target_end": 416,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S05",
+      "group": "A",
+      "scaffold_start": 299,
+      "scaffold_end": 312,
+      "scaffold_length": 13,
+      "target_start": 52,
+      "target_end": 78,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S06",
+      "group": "B",
+      "scaffold_start": 286,
+      "scaffold_end": 299,
+      "scaffold_length": 13,
+      "target_start": 416,
+      "target_end": 442,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S07",
+      "group": "A",
+      "scaffold_start": 273,
+      "scaffold_end": 286,
+      "scaffold_length": 13,
+      "target_start": 78,
+      "target_end": 104,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S08",
+      "group": "B",
+      "scaffold_start": 260,
+      "scaffold_end": 273,
+      "scaffold_length": 13,
+      "target_start": 442,
+      "target_end": 468,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S09",
+      "group": "A",
+      "scaffold_start": 247,
+      "scaffold_end": 260,
+      "scaffold_length": 13,
+      "target_start": 104,
+      "target_end": 130,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S10",
+      "group": "B",
+      "scaffold_start": 234,
+      "scaffold_end": 247,
+      "scaffold_length": 13,
+      "target_start": 468,
+      "target_end": 494,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S11",
+      "group": "A",
+      "scaffold_start": 221,
+      "scaffold_end": 234,
+      "scaffold_length": 13,
+      "target_start": 130,
+      "target_end": 156,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S12",
+      "group": "B",
+      "scaffold_start": 208,
+      "scaffold_end": 221,
+      "scaffold_length": 13,
+      "target_start": 494,
+      "target_end": 520,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S13",
+      "group": "A",
+      "scaffold_start": 195,
+      "scaffold_end": 208,
+      "scaffold_length": 13,
+      "target_start": 156,
+      "target_end": 182,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S14",
+      "group": "B",
+      "scaffold_start": 182,
+      "scaffold_end": 195,
+      "scaffold_length": 13,
+      "target_start": 520,
+      "target_end": 546,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S15",
+      "group": "A",
+      "scaffold_start": 169,
+      "scaffold_end": 182,
+      "scaffold_length": 13,
+      "target_start": 182,
+      "target_end": 208,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S16",
+      "group": "B",
+      "scaffold_start": 156,
+      "scaffold_end": 169,
+      "scaffold_length": 13,
+      "target_start": 546,
+      "target_end": 572,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S17",
+      "group": "A",
+      "scaffold_start": 143,
+      "scaffold_end": 156,
+      "scaffold_length": 13,
+      "target_start": 208,
+      "target_end": 234,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S18",
+      "group": "B",
+      "scaffold_start": 130,
+      "scaffold_end": 143,
+      "scaffold_length": 13,
+      "target_start": 572,
+      "target_end": 598,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S19",
+      "group": "A",
+      "scaffold_start": 117,
+      "scaffold_end": 130,
+      "scaffold_length": 13,
+      "target_start": 234,
+      "target_end": 260,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S20",
+      "group": "B",
+      "scaffold_start": 104,
+      "scaffold_end": 117,
+      "scaffold_length": 13,
+      "target_start": 598,
+      "target_end": 624,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S21",
+      "group": "A",
+      "scaffold_start": 91,
+      "scaffold_end": 104,
+      "scaffold_length": 13,
+      "target_start": 260,
+      "target_end": 286,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S22",
+      "group": "B",
+      "scaffold_start": 78,
+      "scaffold_end": 91,
+      "scaffold_length": 13,
+      "target_start": 624,
+      "target_end": 650,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S23",
+      "group": "A",
+      "scaffold_start": 65,
+      "scaffold_end": 78,
+      "scaffold_length": 13,
+      "target_start": 286,
+      "target_end": 312,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S24",
+      "group": "B",
+      "scaffold_start": 52,
+      "scaffold_end": 65,
+      "scaffold_length": 13,
+      "target_start": 650,
+      "target_end": 676,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S25",
+      "group": "A",
+      "scaffold_start": 39,
+      "scaffold_end": 52,
+      "scaffold_length": 13,
+      "target_start": 312,
+      "target_end": 338,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S26",
+      "group": "B",
+      "scaffold_start": 26,
+      "scaffold_end": 39,
+      "scaffold_length": 13,
+      "target_start": 676,
+      "target_end": 702,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S27",
+      "group": "A",
+      "scaffold_start": 13,
+      "scaffold_end": 26,
+      "scaffold_length": 13,
+      "target_start": 338,
+      "target_end": 364,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    },
+    {
+      "staple_id": "S28",
+      "group": "B",
+      "scaffold_start": 0,
+      "scaffold_end": 13,
+      "scaffold_length": 13,
+      "target_start": 702,
+      "target_end": 728,
+      "target_length": 26,
+      "total_length": 39,
+      "domain_order": "5p_target_26",
+      "scaffold_strand": "-",
+      "target_strand": "-"
+    }
+  ],
+  "junctions": [
+    {
+      "junction_id": "J1",
+      "position": 364,
+      "upstream_group": "A",
+      "downstream_group": "B"
+    },
+    {
+      "junction_id": "J2",
+      "position": 0,
+      "upstream_group": "B",
+      "downstream_group": "A"
+    }
+  ],
+  "nicks": [
+    {
+      "nick_id": "N1",
+      "upstream_oligo": "T01",
+      "upstream_end": "3'",
+      "downstream_oligo": "T02",
+      "downstream_end": "5'",
+      "genomic_or_target_position": 212,
+      "five_prime_phosphate": "no",
+      "three_prime_hydroxyl": "yes",
+      "intended_ligation": false
+    },
+    {
+      "nick_id": "N2",
+      "upstream_oligo": "T02",
+      "upstream_end": "3'",
+      "downstream_oligo": "T03",
+      "downstream_end": "5'",
+      "genomic_or_target_position": 316,
+      "five_prime_phosphate": "no",
+      "three_prime_hydroxyl": "yes",
+      "intended_ligation": false
+    },
+    {
+      "nick_id": "N3",
+      "upstream_oligo": "T03",
+      "upstream_end": "3'",
+      "downstream_oligo": "T04",
+      "downstream_end": "5'",
+      "genomic_or_target_position": 420,
+      "five_prime_phosphate": "no",
+      "three_prime_hydroxyl": "yes",
+      "intended_ligation": false
+    },
+    {
+      "nick_id": "N4",
+      "upstream_oligo": "T04",
+      "upstream_end": "3'",
+      "downstream_oligo": "T05",
+      "downstream_end": "5'",
+      "genomic_or_target_position": 524,
+      "five_prime_phosphate": "no",
+      "three_prime_hydroxyl": "yes",
+      "intended_ligation": false
+    },
+    {
+      "nick_id": "N5",
+      "upstream_oligo": "T05",
+      "upstream_end": "3'",
+      "downstream_oligo": "T06",
+      "downstream_end": "5'",
+      "genomic_or_target_position": 628,
+      "five_prime_phosphate": "no",
+      "three_prime_hydroxyl": "yes",
+      "intended_ligation": false
+    },
+    {
+      "nick_id": "N6",
+      "upstream_oligo": "T06",
+      "upstream_end": "3'",
+      "downstream_oligo": "T01",
+      "downstream_end": "5'",
+      "genomic_or_target_position": 836,
+      "five_prime_phosphate": "no",
+      "three_prime_hydroxyl": "yes",
+      "intended_ligation": false
+    }
+  ],
+  "checks": [
+    {
+      "level": "note",
+      "code": "engine",
+      "message": "序列由 scaffold/目标唯一决定；Tm 仅作体检，未参与选序列"
+    }
+  ],
+  "error_count": 0,
+  "counts": {
+    "target_oligos": 6,
+    "boundary_oligos": 2,
+    "staples": 28,
+    "staples_A": 14,
+    "staples_B": 14,
+    "covered_scaffold_nt": 364
+  },
+  "tm_summary": {
+    "available": true,
+    "note": "SantaLucia 最近邻；只做同批横向比较",
+    "tm_scaffold_domain": {
+      "n": 28,
+      "min": 29.33,
+      "max": 55.98,
+      "mean": 44.14,
+      "stdev": 6.29,
+      "outliers": [
+        "S16"
+      ]
+    },
+    "tm_target_domain": {
+      "n": 28,
+      "min": 51.03,
+      "max": 69.02,
+      "mean": 61.16,
+      "stdev": 4.78,
+      "outliers": [
+        "S26"
+      ]
+    }
+  }
+}
