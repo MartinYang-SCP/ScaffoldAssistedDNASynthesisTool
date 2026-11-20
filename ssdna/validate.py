@@ -342,6 +342,18 @@ def validate_boundary_spanning_oligos(
     return issues
 
 
+def _phosphate_state(value, *, hydroxyl: bool = False) -> str:
+    """把各种写法归一到 yes / no / unknown。"""
+    text = str(value).strip().lower()
+    if text in ("yes", "true", "phos", "phosphate", "5'-p", "5p"):
+        return "yes"
+    if text in ("no", "false", "oh", "hydroxyl", "none", "-"):
+        return "no"
+    if hydroxyl and text in ("3'-oh", "3oh"):
+        return "yes"
+    return "unknown"
+
+
 def _strictly_contains(start: int, end: int, position: int,
                        length: int | None) -> bool:
     if length:
@@ -402,16 +414,28 @@ def validate_scaffold_mapping(
 
         _ = t_start  # 目标侧由 validate_target_binding 单独核对
 
-    # 结合位点是否互相重叠（不是同一起点，但区间相交）
-    ordered = sorted(staples, key=lambda s: int(s["scaffold_start"]))
-    for a, b in zip(ordered, ordered[1:]):
-        a_end = int(a["scaffold_start"]) + scaffold_arm
-        b_start = int(b["scaffold_start"])
-        if b_start < a_end:
-            issues.append(Issue("error", "scaffold_site_overlap", b["staple_id"],
-                                f"scaffold [{b_start},{b_start + scaffold_arm})",
-                                f"与 {a['staple_id']} 的结合位点重叠",
-                                "相邻 staple 的 13 nt 区间不能相交"))
+    # 结合位点是否互相重叠：按位置占用表判断，**跨原点也算**
+    # （只比较"排序后相邻"的区间会漏掉环上末段与首段的重叠）
+    occupied: dict[int, str] = {}
+    collisions: dict[tuple[str, str], list[int]] = {}
+    for staple in sorted(staples, key=lambda s: int(s["scaffold_start"])):
+        sid = staple["staple_id"]
+        start = int(staple["scaffold_start"])
+        for offset in range(scaffold_arm):
+            position = (start + offset) % L
+            owner = occupied.get(position)
+            if owner is None:
+                occupied[position] = sid
+                continue
+            if owner != sid:
+                collisions.setdefault((owner, sid), []).append(position)
+    for (first_id, second_id), positions in collisions.items():
+        issues.append(Issue(
+            "error", "scaffold_site_overlap", second_id,
+            "scaffold " + ", ".join(str(p) for p in sorted(positions)[:6]),
+            f"与 {first_id} 的结合位点重叠 {len(positions)} nt",
+            "相邻 staple 的 13 nt 区间不能相交（环状序列的跨原点处也一样）",
+        ))
     return issues
 
 
@@ -420,6 +444,7 @@ def validate_target_binding(
     staples: list[dict[str, Any]],
     *,
     target_arm: int = 26,
+    domain_order: str = "5p_target_26",
 ) -> list[Issue]:
     """26 nt 臂是否与目标对应区间互补，以及是否有两条 staple 抢同一段目标。"""
     issues: list[Issue] = []
@@ -431,7 +456,7 @@ def validate_target_binding(
         sid = staple["staple_id"]
         sequence = staple["sequence"]
         t_start = int(staple["target_start"])
-        t_dom = sequence[:target_arm]
+        t_dom = sequence[:target_arm] if domain_order == "5p_target_26" else sequence[-target_arm:]
         expected = doubled[t_start : t_start + target_arm]
         if len(expected) < target_arm:
             issues.append(Issue("error", "target_out_of_range", sid,
@@ -507,6 +532,37 @@ def validate_nicks(
                 issues.append(Issue("error", "nick_position", record["nick_id"],
                                     f"记录 {position}，实际 {expected_pos}",
                                     "nick 坐标与相邻关系不一致", "按上游 3′ 端坐标重记"))
+        # 与对应 oligo 的端基修饰交叉核对（两边都明确时才判断）
+        upstream_oligo = next(
+            (o for o in oligos if o["oligo_id"] == record.get("upstream_oligo")), None
+        )
+        downstream_oligo = next(
+            (o for o in oligos if o["oligo_id"] == record.get("downstream_oligo")), None
+        )
+        claimed = _phosphate_state(record.get("five_prime_phosphate"))
+        if downstream_oligo is not None:
+            declared = _phosphate_state(downstream_oligo.get("five_prime_modification"))
+            if "unknown" not in (claimed, declared) and claimed != declared:
+                issues.append(Issue(
+                    "warning", "nick_oligo_end_mismatch", record["nick_id"],
+                    f"位置 {record.get('genomic_or_target_position')}",
+                    f"nick 记录 5′-P={claimed}，但下游 oligo "
+                    f"{downstream_oligo['oligo_id']} 声明为 {declared}",
+                    "确认到底做没做磷酸化；两处必须一致",
+                ))
+        if upstream_oligo is not None:
+            declared_3 = _phosphate_state(upstream_oligo.get("three_prime_modification"),
+                                          hydroxyl=True)
+            claimed_3 = _phosphate_state(record.get("three_prime_hydroxyl"), hydroxyl=True)
+            if "unknown" not in (claimed_3, declared_3) and claimed_3 != declared_3:
+                issues.append(Issue(
+                    "warning", "nick_oligo_end_mismatch", record["nick_id"],
+                    f"位置 {record.get('genomic_or_target_position')}",
+                    f"nick 记录 3′-OH={claimed_3}，但上游 oligo "
+                    f"{upstream_oligo['oligo_id']} 声明为 {declared_3}",
+                    "3′ 端状态必须与合成记录一致",
+                ))
+
         phosphate = str(record.get("five_prime_phosphate", "unknown")).lower()
         wants_ligation = str(record.get("intended_ligation")).lower() == "true"
         if phosphate in ("unknown", ""):
@@ -593,6 +649,11 @@ def run_validation(
 ) -> dict[str, Any]:
     config = bundle.report.get("config", {})
     topo = topology or config.get("target", {}).get("topology", "circular")
+    staple_cfg = config.get("staple", {})
+    # 以报告里的实际配置为准，避免"生成器用了 5p_scaffold_13、验证器还按 5p_target_26 拆"
+    scaffold_arm = int(staple_cfg.get("scaffold_binding_length") or scaffold_arm)
+    target_arm = int(staple_cfg.get("target_binding_length") or target_arm)
+    domain_order = str(staple_cfg.get("domain_order") or domain_order)
     T = len(bundle.target_sequence)
 
     issues: list[Issue] = []
@@ -633,7 +694,8 @@ def run_validation(
         bundle.scaffold_sequence, bundle.staples,
         scaffold_arm=scaffold_arm, target_arm=target_arm, domain_order=domain_order))
     record("target_binding", validate_target_binding(
-        bundle.target_sequence, bundle.staples, target_arm=target_arm))
+        bundle.target_sequence, bundle.staples,
+        target_arm=target_arm, domain_order=domain_order))
     record("nicks", validate_nicks(
         bundle.oligos, bundle.nicks or bundle.reported_nicks,
         topology=topo, target_length=T))

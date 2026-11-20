@@ -9,6 +9,8 @@ scaffold:
   # 实验室提供的环状单链对应文件里的正链（+）还是负链（-）。
   # 选错会让所有 13 nt 臂全部反向，必须实测确认。
   strand: null
+  # 文件坐标下的有效区域："whole" 或 [a, b)（b < a 表示跨原点）
+  region: null
   topology: circular
 
 staple:

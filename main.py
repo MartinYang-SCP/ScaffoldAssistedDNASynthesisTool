@@ -49,6 +49,27 @@ def _load_target(cfg: dict[str, Any], *, base: pathlib.Path) -> str:
     return load_fasta(_resolve(str(source), base=base)).sequence
 
 
+def _resolve_region(scaffold, cfg: dict[str, Any], strand: str):
+    """按 ``scaffold.region`` 取工作序列。
+
+    区域坐标是**文件坐标**（先按区域切，再按 strand 定向）；``"whole"`` 表示整段。
+    不接受空值以外的模糊写法——配置校验已经保证它非 null。
+    """
+    from ssdna.sequence import get_circular_subsequence
+
+    region = cfg["scaffold"]["region"]
+    if region == "whole":
+        return _orient(scaffold.sequence, strand), "whole", None
+    if isinstance(region, (list, tuple)) and len(region) == 2:
+        start, end = int(region[0]), int(region[1])
+        length = (end - start) % len(scaffold.sequence) or len(scaffold.sequence)
+        piece = get_circular_subsequence(scaffold.sequence, start, length)
+        return _orient(piece, strand), "subregion", (start, end)
+    raise ValueError(
+        f"scaffold.region 必须是 'whole' 或 [start, end)，收到 {region!r}"
+    )
+
+
 def _orient(sequence: str, strand: str) -> str:
     if strand == "+":
         return sequence
@@ -94,13 +115,20 @@ def run(config_path: pathlib.Path, *, verbose: bool = True) -> int:
 
     # ---- 步骤 4-6：映射 / oligo / staple ----
     strand = cfg["scaffold"]["strand"]
+    working_sequence, region_mode, region_bounds = _resolve_region(scaffold, cfg, strand)
+    say(f"  有效区域: {region_mode}"
+        + (f" {region_bounds}" if region_bounds else "")
+        + f" → 工作序列 {len(working_sequence)} nt")
+
     inputs = DesignInputs(
         scaffold=scaffold,
         scaffold_strand=strand,
-        working_sequence=_orient(scaffold.sequence, strand),
+        working_sequence=working_sequence,
         target_sequence=target_sequence,
         target_length=len(target_sequence),
         config=cfg,
+        scaffold_region=region_mode,
+        scaffold_region_bounds=region_bounds,
     )
 
     labels = {

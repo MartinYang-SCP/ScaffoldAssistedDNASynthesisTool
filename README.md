@@ -37,8 +37,9 @@
 | C | 序列生成引擎 | [04_TaskC_序列生成引擎.md](docs/04_TaskC_序列生成引擎.md) |
 | D | 独立验证模块 + 热力学接口 | [05_TaskD_验证模块.md](docs/05_TaskD_验证模块.md) |
 | E | 整合 / 测试 / 交付 | 本 README + `main.py` |
+| — | 外部评审意见处理 | [07_评审意见处理.md](docs/07_评审意见处理.md) |
 
-**尚未生成任何真实实验序列**：默认配置里的关键参数都是 `null`，程序会在第 1 步停下并列出缺失项。
+**尚未生成任何真实实验序列**：默认配置里的关键参数都是 `null`，程序会在第 1 步停下并列出缺失项（现在是 8 项）。
 
 ---
 
@@ -72,7 +73,7 @@ python main.py --config config/design_config.demo.yaml
 # 3) 只跑某个模块
 python -m ssdna.design --demo --scan-phase            # 相位扫描，不生成序列
 python -m ssdna.validate outputs/demo                  # 单独验证一个输出目录
-python -m unittest discover -s tests -v                # 177 个测试
+python -m unittest discover -s tests -v                # 196 个测试
 ```
 
 演示输出在 `outputs/demo/`，验证结果在 `outputs/demo/validation/`。
@@ -101,7 +102,7 @@ python -m unittest discover -s tests -v                # 177 个测试
 │   ├── validate.py              独立验证（只读文件，不 import 生成器）
 │   ├── report.py                FASTA / CSV / JSON 导出
 │   └── cli.py                   `python -m ssdna.cli` 单文件解析入口
-├── tests/                       177 个单元测试
+├── tests/                       196 个单元测试
 ├── outputs/                     运行产物（demo / validation）
 ├── docs/                        各阶段报告 + 5 张图
 ├── params/                      参数清单（JSON）与 design_config 旧版模板
@@ -155,6 +156,7 @@ python -m unittest discover -s tests -v                # 177 个测试
 scaffold:
   file: data/scaffold.dna
   strand: null            # 实验室的单链对应文件正链(+)还是负链(-)
+  region: null            # "whole" 或 [a,b)：文件坐标下的有效区域，必须显式给
 staple:
   scaffold_binding_length: 13
   target_binding_length: 26
@@ -183,7 +185,11 @@ output:
 - `total_length == scaffold_binding_length + target_binding_length`；
 - 每条 target oligo 至少跨过一个 staple 臂接缝，nick 不能压在接缝上；
 - 目标长度**不必**是 26 的倍数：26 nt 臂铺不满的部分就是未被锚定的尾巴；
-- `group_pattern: "AB"` 时两组 staple 条数只差 1，因此 `L(A) ≈ L(B)`。
+- `group_pattern: "AB"` 时两组 staple 条数只差 1，因此 `L(A) ≈ L(B)`；
+- `scaffold.region` 不填就停：程序不替你假设"整段 1200 nt 都是 scaffold"。
+
+**连接状态**：`nick` 的 `intended_ligation` 只是设计意图，`circle_closed` 只有在
+`ligation_state == "ligated"`（实验确认）时才为真。程序不会把"计划连接"当成"已经连上"。
 
 ---
 
@@ -210,7 +216,7 @@ output:
 ## 测试
 
 ```bash
-python -m unittest discover -s tests -v      # 177 个
+python -m unittest discover -s tests -v      # 196 个
 ```
 
 任务书要求的十类测试与对应位置：

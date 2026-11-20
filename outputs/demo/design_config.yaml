@@ -2,6 +2,7 @@ schema: scaffold_staple_design/design_config/v1
 scaffold:
   file: data/scaffold.dna
   strand: +
+  region: whole
   topology: circular
 staple:
   scaffold_binding_length: 13

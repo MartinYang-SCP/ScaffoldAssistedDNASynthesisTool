@@ -1,7 +1,7 @@
-﻿nick_id,upstream_oligo,upstream_end,downstream_oligo,downstream_end,genomic_or_target_position,five_prime_phosphate,three_prime_hydroxyl,intended_ligation
-N1,T01,3',T02,5',212,no,yes,False
-N2,T02,3',T03,5',316,no,yes,False
-N3,T03,3',T04,5',420,no,yes,False
-N4,T04,3',T05,5',524,no,yes,False
-N5,T05,3',T06,5',628,no,yes,False
-N6,T06,3',T01,5',836,no,yes,False
+﻿nick_id,upstream_oligo,upstream_end,downstream_oligo,downstream_end,genomic_or_target_position,five_prime_phosphate,three_prime_hydroxyl,intended_ligation,ligation_state
+N1,T01,3',T02,5',212,no,unknown,False,none
+N2,T02,3',T03,5',316,no,unknown,False,none
+N3,T03,3',T04,5',420,no,unknown,False,none
+N4,T04,3',T05,5',524,no,unknown,False,none
+N5,T05,3',T06,5',628,no,unknown,False,none
+N6,T06,3',T01,5',836,no,unknown,False,none

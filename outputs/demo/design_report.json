@@ -6,6 +6,7 @@
     "scaffold": {
       "file": "data/scaffold.dna",
       "strand": "+",
+      "region": "whole",
       "topology": "circular"
     },
     "staple": {
@@ -58,6 +59,12 @@
     "working_sequence_sha256": "8ad0aa525c975ce4c572df7429b3f343646fff78c9387d5b04fe9340d70989dc",
     "target_length": 728,
     "target_sequence_sha256": "0f128a44da60b8987c8254963c5ec9393251f77a182aa680b9e353daddfd80a6"
+  },
+  "scaffold_region": {
+    "mode": "whole",
+    "file_coordinates": null,
+    "working_length": 1200,
+    "coordinate_map": "staple 的 scaffold 坐标以 working_sequence 为 0 点；换算回文件坐标需加上 file_coordinates[0]（整段时为 0）"
   },
   "regions": [
     {
@@ -566,8 +573,9 @@
       "downstream_end": "5'",
       "genomic_or_target_position": 212,
       "five_prime_phosphate": "no",
-      "three_prime_hydroxyl": "yes",
-      "intended_ligation": false
+      "three_prime_hydroxyl": "unknown",
+      "intended_ligation": false,
+      "ligation_state": "none"
     },
     {
       "nick_id": "N2",
@@ -577,8 +585,9 @@
       "downstream_end": "5'",
       "genomic_or_target_position": 316,
       "five_prime_phosphate": "no",
-      "three_prime_hydroxyl": "yes",
-      "intended_ligation": false
+      "three_prime_hydroxyl": "unknown",
+      "intended_ligation": false,
+      "ligation_state": "none"
     },
     {
       "nick_id": "N3",
@@ -588,8 +597,9 @@
       "downstream_end": "5'",
       "genomic_or_target_position": 420,
       "five_prime_phosphate": "no",
-      "three_prime_hydroxyl": "yes",
-      "intended_ligation": false
+      "three_prime_hydroxyl": "unknown",
+      "intended_ligation": false,
+      "ligation_state": "none"
     },
     {
       "nick_id": "N4",
@@ -599,8 +609,9 @@
       "downstream_end": "5'",
       "genomic_or_target_position": 524,
       "five_prime_phosphate": "no",
-      "three_prime_hydroxyl": "yes",
-      "intended_ligation": false
+      "three_prime_hydroxyl": "unknown",
+      "intended_ligation": false,
+      "ligation_state": "none"
     },
     {
       "nick_id": "N5",
@@ -610,8 +621,9 @@
       "downstream_end": "5'",
       "genomic_or_target_position": 628,
       "five_prime_phosphate": "no",
-      "three_prime_hydroxyl": "yes",
-      "intended_ligation": false
+      "three_prime_hydroxyl": "unknown",
+      "intended_ligation": false,
+      "ligation_state": "none"
     },
     {
       "nick_id": "N6",
@@ -621,8 +633,9 @@
       "downstream_end": "5'",
       "genomic_or_target_position": 836,
       "five_prime_phosphate": "no",
-      "three_prime_hydroxyl": "yes",
-      "intended_ligation": false
+      "three_prime_hydroxyl": "unknown",
+      "intended_ligation": false,
+      "ligation_state": "none"
     }
   ],
   "checks": [

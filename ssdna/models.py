@@ -297,8 +297,13 @@ class Nick:
     upstream_end: str = "3'"
     downstream_end: str = "5'"
     five_prime_phosphate: str = "unknown"  # "yes" / "no" / "unknown"
-    three_prime_hydroxyl: str = "yes"
-    intended_ligation: bool = False
+    three_prime_hydroxyl: str = "unknown"  # "yes" / "no" / "unknown"
+    intended_ligation: bool = False  # 设计意图，**不是**事实
+    ligation_state: str = "none"  # 事实："none" / "planned" / "ligated"
+
+    def __post_init__(self) -> None:
+        if self.ligation_state not in ("none", "planned", "ligated"):
+            raise ValueError(f"未知 ligation_state：{self.ligation_state!r}")
 
     @property
     def position(self) -> int:
@@ -306,8 +311,12 @@ class Nick:
 
     @property
     def bonded(self) -> bool:
-        """是否已经共价连接：只有显式 intended_ligation 才算。"""
-        return self.intended_ligation
+        """是否**已经**共价连接。
+
+        只有 ``ligation_state == "ligated"`` 才算——那是实验给出的结论。
+        ``intended_ligation`` 只是意图，单独用它判断会把"计划"当成"事实"。
+        """
+        return self.ligation_state == "ligated"
 
 
 @dataclass

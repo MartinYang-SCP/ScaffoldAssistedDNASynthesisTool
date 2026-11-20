@@ -1,7 +1,7 @@
 # 验证摘要
 
 - 结论：**PASS**
-- 验证目录：`outputs\demo`
+- 验证目录：`D:\THU\大四上\核酸纳米材料\小课题\outputs\demo`
 - 拓扑：circular
 - oligo 6 条（其中跨界 2 条）、staple 28 条、nick 6 条
 - 错误 0、警告 0、提示 0

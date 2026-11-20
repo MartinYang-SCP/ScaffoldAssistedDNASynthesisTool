@@ -9,6 +9,7 @@ is_demo: true
 scaffold:
   file: data/scaffold.dna
   strand: "+"          # 演示用；真实值待 Q2 确认
+  region: "whole"      # 演示：整段 1200 nt 都是工作模板（真实设计必须确认）
   topology: circular
 
 staple:

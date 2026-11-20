@@ -39,6 +39,9 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "scaffold": {
         "file": "minimalplasmid(1).dna",
         "strand": None,  # "+" | "-"：实验室提供的单链对应文件正链还是负链
+        # "whole" 表示整段；[a, b) 表示文件坐标下的一段（b < a 表示跨原点）。
+        # 必须显式给出——"整段"也要你写 "whole"，程序不替你假设。
+        "region": None,
         "topology": "circular",
     },
     "staple": {
@@ -133,6 +136,8 @@ class DesignInputs:
     target_length: int
     config: dict[str, Any] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
+    scaffold_region: str = "whole"
+    scaffold_region_bounds: tuple[int, int] | None = None
 
 
 def _orientation(seq: str, strand: str) -> str:
@@ -186,10 +191,25 @@ def design_target_oligos(
         for d in group_definitions
     ]
 
-    cuts = sorted({int(c) % length for c in (oligo_parameters.get("cuts") or [])})
-    if not cuts:
-        raises = "oligo_parameters['cuts'] 为空：不知道要切成几条（不自动等分）"
-        raise ValueError(raises)
+    raw_cuts = oligo_parameters.get("cuts") or []
+    if not raw_cuts:
+        raise ValueError(
+            "oligo_parameters['cuts'] 为空：不知道要切成几条（不自动等分）"
+        )
+    cuts: list[int] = []
+    for value in raw_cuts:
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError(f"切点必须是整数，收到 {value!r}")
+        if not (0 < value < length):
+            raise ValueError(
+                f"切点 {value} 越界：必须满足 0 < cut < {length}。"
+                "不接受负数或越界值——那会被取模悄悄变成另一个位置"
+            )
+        cuts.append(value)
+    duplicates = sorted({c for c in cuts if cuts.count(c) > 1})
+    if duplicates:
+        raise ValueError(f"切点重复：{duplicates}（重复项会被静默合并，因此直接报错）")
+    cuts.sort()
 
     bounds: list[tuple[int, int]] = []
     for i, start in enumerate(cuts):
@@ -401,6 +421,7 @@ def check_design(
     junctions: list[dict[str, Any]],
     arm_s: int,
     arm_t: int,
+    nicks: list[Any] | None = None,
 ) -> list[Check]:
     checks: list[Check] = []
     L = len(working_sequence)
@@ -495,7 +516,29 @@ def check_design(
                                 f"{staple.staple_id} 与 {seen_target[start]} 抢同一段目标"))
         seen_target[start] = staple.staple_id
 
-    # 9) 提示
+    # 9) nick 不得压在 staple 臂接缝上；每条 oligo 至少跨过一个接缝
+    seams = set()
+    for staple in staples:
+        seams.add(staple.target_binding_region.start % T)
+        seams.add(staple.target_binding_region.end % T)
+    for nick in nicks or []:
+        if nick.genomic_or_target_position % T in seams:
+            checks.append(Check(
+                "error", "nick_on_seam",
+                f"{nick.nick_id} 落在 staple 臂接缝 "
+                f"{nick.genomic_or_target_position % T} 处",
+            ))
+    for oligo in oligos:
+        span = (oligo.target_end - oligo.target_start) % T or T
+        if not any(
+            0 < ((seam - oligo.target_start) % T) < span for seam in seams
+        ):
+            checks.append(Check(
+                "error", "oligo_spans_no_seam",
+                f"{oligo.oligo_id} 没有跨过任何 staple 臂接缝",
+            ))
+
+    # 10) 提示
     checks.append(Check("note", "engine",
                         "序列由 scaffold/目标唯一决定；Tm 仅作体检，未参与选序列"))
     return checks
@@ -573,6 +616,14 @@ def run_design(
         target_sequence=inputs.target_sequence,
     )
     step("check_design")
+    nicks = build_nicks(
+        oligos,
+        topology=cfg["target"]["topology"],
+        five_prime_phosphate=cfg["target"].get("five_prime_phosphate") or "unknown",
+        intended_ligation=bool(cfg["target"].get("intended_ligation")),
+        three_prime_hydroxyl=str(cfg["target"].get("three_prime_hydroxyl") or "unknown"),
+        nick_overrides=cfg["target"].get("nick_overrides") or {},
+    )
     checks_3 = check_design(
         inputs.scaffold,
         inputs.working_sequence,
@@ -583,15 +634,9 @@ def run_design(
         junctions=junction_defs,
         arm_s=arm_s,
         arm_t=arm_t,
+        nicks=nicks,
     )
 
-    nicks = build_nicks(
-        oligos,
-        topology=cfg["target"]["topology"],
-        five_prime_phosphate=cfg["target"].get("five_prime_phosphate") or "unknown",
-        intended_ligation=bool(cfg["target"].get("intended_ligation")),
-    )
-    step("export")
     payload = to_report(inputs, regions, oligos, staples, junction_defs,
                         checks_1 + checks_2 + checks_3, nicks)
     payload["_sequences"] = {
@@ -601,12 +646,16 @@ def run_design(
         "staples": {
             s.staple_id: {
                 "sequence": s.sequence,
-                "scaffold_domain": s.sequence[-arm_s:]
-                if s.domain_order == "5p_target_26"
-                else s.sequence[:arm_s],
-                "target_domain": s.sequence[:arm_t]
-                if s.domain_order == "5p_target_26"
-                else s.sequence[arm_t:],
+                "scaffold_domain": (
+                    s.sequence[arm_t : arm_t + arm_s]
+                    if s.domain_order == "5p_target_26"
+                    else s.sequence[:arm_s]
+                ),
+                "target_domain": (
+                    s.sequence[:arm_t]
+                    if s.domain_order == "5p_target_26"
+                    else s.sequence[arm_s : arm_s + arm_t]
+                ),
             }
             for s in staples
         },
@@ -630,25 +679,50 @@ def run_design(
     return payload
 
 
-def build_nicks(oligos, *, topology, five_prime_phosphate, intended_ligation):
-    """相邻 target oligo 的 3′→5′ 相邻关系，逐条显式记录。"""
+def build_nicks(
+    oligos,
+    *,
+    topology,
+    five_prime_phosphate,
+    intended_ligation,
+    three_prime_hydroxyl="unknown",
+    nick_overrides: dict[str, dict] | None = None,
+):
+    """相邻 target oligo 的 3′→5′ 相邻关系，逐条显式记录。
+
+    默认值只用于"没单独配置"的 nick；``nick_overrides`` 可以按 ``N1`` / ``N2``
+    逐条覆盖端基与连接状态，从而表达混合修饰与部分连接。
+
+    注意：``intended_ligation`` 是**意图**，只翻译成 ``ligation_state="planned"``；
+    要表达"实验已确认连上"，必须显式写 ``ligation_state="ligated"``。
+    """
     from .models import Nick
 
+    overrides = nick_overrides or {}
     ordered = sorted(oligos, key=lambda o: o.target_start)
     nicks = []
     for i, upstream in enumerate(ordered):
         if topology == "linear" and i == len(ordered) - 1:
             continue
         downstream = ordered[(i + 1) % len(ordered)]
+        nick_id = f"N{i + 1}"
+        override = dict(overrides.get(nick_id, {}))
+        intended = bool(override.get("intended_ligation", intended_ligation))
+        state = override.get("ligation_state") or ("planned" if intended else "none")
         nicks.append(
             Nick(
-                nick_id=f"N{i + 1}",
+                nick_id=nick_id,
                 upstream_oligo=upstream.oligo_id,
                 downstream_oligo=downstream.oligo_id,
                 genomic_or_target_position=upstream.target_end,
-                five_prime_phosphate=five_prime_phosphate,
-                three_prime_hydroxyl="yes",
-                intended_ligation=intended_ligation,
+                five_prime_phosphate=str(
+                    override.get("five_prime_phosphate", five_prime_phosphate)
+                ),
+                three_prime_hydroxyl=str(
+                    override.get("three_prime_hydroxyl", three_prime_hydroxyl)
+                ),
+                intended_ligation=intended,
+                ligation_state=state,
             )
         )
     return nicks
@@ -672,6 +746,13 @@ def to_report(inputs, regions, oligos, staples, junctions, checks, nicks=None) -
             "target_sequence_sha256": hashlib.sha256(
                 inputs.target_sequence.encode()
             ).hexdigest(),
+        },
+        "scaffold_region": {
+            "mode": getattr(inputs, "scaffold_region", None) or "whole",
+            "file_coordinates": getattr(inputs, "scaffold_region_bounds", None),
+            "working_length": len(inputs.working_sequence),
+            "coordinate_map": "staple 的 scaffold 坐标以 working_sequence 为 0 点；"
+                              "换算回文件坐标需加上 file_coordinates[0]（整段时为 0）",
         },
         "regions": [
             {"region_id": r.region_id, "group": r.group, "start": r.start,
@@ -717,6 +798,7 @@ def to_report(inputs, regions, oligos, staples, junctions, checks, nicks=None) -
                 "five_prime_phosphate": n.five_prime_phosphate,
                 "three_prime_hydroxyl": n.three_prime_hydroxyl,
                 "intended_ligation": n.intended_ligation,
+                "ligation_state": n.ligation_state,
             }
             for n in (nicks or [])
         ],
@@ -777,7 +859,7 @@ def write_outputs(payload: dict[str, Any], outdir: Path) -> dict[str, Path]:
         writer.writerow([
             "nick_id", "upstream_oligo", "upstream_end", "downstream_oligo",
             "downstream_end", "genomic_or_target_position", "five_prime_phosphate",
-            "three_prime_hydroxyl", "intended_ligation",
+            "three_prime_hydroxyl", "intended_ligation", "ligation_state",
         ])
         for n in payload["nicks"]:
             writer.writerow([
@@ -785,6 +867,7 @@ def write_outputs(payload: dict[str, Any], outdir: Path) -> dict[str, Path]:
                 n["downstream_oligo"], n["downstream_end"],
                 n["genomic_or_target_position"], n["five_prime_phosphate"],
                 n["three_prime_hydroxyl"], n["intended_ligation"],
+                n["ligation_state"],
             ])
     paths["nicks_csv"] = nicks_csv
 
@@ -845,7 +928,7 @@ def demo_config(base: dict[str, Any]) -> dict[str, Any]:
     cfg = json.loads(json.dumps(base))
     cfg["is_demo"] = True
     cfg["_demo_note"] = "target 为合成序列，仅用于验证引擎，不是真实设计"
-    cfg["scaffold"].update({"strand": "+"})
+    cfg["scaffold"].update({"strand": "+", "region": "whole"})
     cfg["analysis"].update({"temperature_c": 37.0})
     cfg["target"].update({
         "source": {"inline": _synthetic_target(728)},

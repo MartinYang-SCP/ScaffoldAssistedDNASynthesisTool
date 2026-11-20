@@ -178,6 +178,7 @@ class TestStructureJson(unittest.TestCase):
                 "five_prime_phosphate",
                 "three_prime_hydroxyl",
                 "intended_ligation",
+                "ligation_state",
                 "bonded",
             },
         )
@@ -390,10 +391,13 @@ class TestValidatorCatchesErrors(unittest.TestCase):
         )
         self.assertIn("oligo_spans_no_seam", self.codes(plan))
 
-    def test_ligation_makes_circle_closed(self) -> None:
+    def test_intent_alone_is_not_closure(self) -> None:
+        """意图只是意图：所有 nick 都"计划连接"也不等于已经闭环。"""
         plan = self._plan(intended_ligation=True)
-        self.assertTrue(plan.circle_closed)
-        self.assertNotIn(
+        self.assertFalse(plan.circle_closed)
+        self.assertFalse(plan.nicks[0].bonded)
+        self.assertEqual(plan.nicks[0].ligation_state, "planned")
+        self.assertIn(
             "not_covalently_closed", {c.code for c in plan.checks if c.level == "note"}
         )
 

@@ -114,14 +114,15 @@ class AssemblyPlan:
 
     @property
     def circle_closed(self) -> bool:
-        """目标链是否已经**共价**闭合成环。
+        """目标链是否**已经**共价闭合成环。
 
-        需要同时满足：拓扑是环、且每一个 nick 都被显式标为已连接。
-        序列覆盖连续（含 boundary oligo 跨过交界）**不算**共价闭环。
+        需要同时满足：拓扑是环、且每一个 nick 的 ``ligation_state`` 都是 ``"ligated"``
+        （实验给出的结论）。``intended_ligation`` 只是设计意图，
+        序列覆盖连续（含 boundary oligo 跨过交界）也**不算**共价闭环。
         """
         if not self.is_circular or not self.nicks:
             return False
-        return all(nick.intended_ligation for nick in self.nicks)
+        return all(nick.ligation_state == "ligated" for nick in self.nicks)
 
 
 # --------------------------------------------------------------------------- #
@@ -326,6 +327,7 @@ def plan_assembly(cfg: PlanConfig) -> AssemblyPlan:
                 five_prime_phosphate=cfg.five_prime_phosphate,
                 three_prime_hydroxyl="yes",
                 intended_ligation=cfg.intended_ligation,
+                ligation_state="planned" if cfg.intended_ligation else "none",
             )
         )
 
@@ -626,6 +628,7 @@ def to_structure_json(plan: AssemblyPlan) -> dict[str, Any]:
                 "five_prime_phosphate": n.five_prime_phosphate,
                 "three_prime_hydroxyl": n.three_prime_hydroxyl,
                 "intended_ligation": n.intended_ligation,
+                "ligation_state": n.ligation_state,
                 "bonded": n.bonded,
             }
             for n in plan.nicks
