@@ -631,7 +631,7 @@
       "upstream_end": "3'",
       "downstream_oligo": "T01",
       "downstream_end": "5'",
-      "genomic_or_target_position": 836,
+      "genomic_or_target_position": 108,
       "five_prime_phosphate": "no",
       "three_prime_hydroxyl": "unknown",
       "intended_ligation": false,

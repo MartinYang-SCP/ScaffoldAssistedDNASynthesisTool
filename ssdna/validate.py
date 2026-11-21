@@ -93,6 +93,17 @@ def _read_csv(path: Path) -> list[dict[str, Any]]:
         return list(csv.DictReader(fh))
 
 
+def _require_columns(path: Path, rows: list[dict[str, Any]], required: list[str]) -> None:
+    """CSV 缺列时给出清晰错误，而不是让下游抛 KeyError。"""
+    if not rows:
+        return  # 空表由各自的检查逻辑处理
+    missing = [c for c in required if c not in rows[0]]
+    if missing:
+        raise ValueError(
+            f"{path} 缺少必需列 {missing}；期望列：{required}"
+        )
+
+
 def load_bundle(directory: str | Path) -> Bundle:
     directory = Path(directory)
     required = {
@@ -113,8 +124,17 @@ def load_bundle(directory: str | Path) -> Bundle:
     oligos = _read_csv(required["oligos"])
     staples = _read_csv(required["staples"])
 
+    _require_columns(required["oligos"], oligos,
+                     ["oligo_id", "sequence", "target_start", "target_end",
+                      "oligo_type", "group", "strand", "length"])
+    _require_columns(required["staples"], staples,
+                     ["staple_id", "sequence", "scaffold_start", "target_start"])
+
     nicks_path = directory / "nicks.csv"
     nicks = _read_csv(nicks_path) if nicks_path.exists() else []
+    _require_columns(nicks_path, nicks,
+                     ["nick_id", "upstream_oligo", "downstream_oligo",
+                      "genomic_or_target_position"])
 
     report: dict[str, Any] = {}
     report_path = directory / "design_report.json"
@@ -447,6 +467,8 @@ def validate_target_binding(
     domain_order: str = "5p_target_26",
 ) -> list[Issue]:
     """26 nt 臂是否与目标对应区间互补，以及是否有两条 staple 抢同一段目标。"""
+    if domain_order not in ("5p_target_26", "5p_scaffold_13"):
+        raise ValueError(f"domain_order 非法：{domain_order!r}")
     issues: list[Issue] = []
     T = len(target_sequence)
     doubled = target_sequence * 2
@@ -473,13 +495,27 @@ def validate_target_binding(
                                 "每条 26 nt 臂必须落在互不重叠的目标区段"))
         windows[t_start] = sid
 
-    ordered = sorted(staples, key=lambda s: int(s["target_start"]))
-    for a, b in zip(ordered, ordered[1:]):
-        if int(b["target_start"]) < int(a["target_start"]) + target_arm:
-            issues.append(Issue("error", "target_site_overlap", b["staple_id"],
-                                f"target {b['target_start']}",
-                                f"与 {a['staple_id']} 的目标臂重叠",
-                                "26 nt 臂首尾相接可以，重叠不行"))
+    # 目标臂重叠：位置占用表，跨原点也算（与 scaffold 侧一致）
+    occupied: dict[int, str] = {}
+    collisions: dict[tuple[str, str], list[int]] = {}
+    for staple in sorted(staples, key=lambda s: int(s["target_start"])):
+        sid = staple["staple_id"]
+        start = int(staple["target_start"])
+        for offset in range(target_arm):
+            position = (start + offset) % T
+            owner = occupied.get(position)
+            if owner is None:
+                occupied[position] = sid
+                continue
+            if owner != sid:
+                collisions.setdefault((owner, sid), []).append(position)
+    for (first_id, second_id), positions in collisions.items():
+        issues.append(Issue(
+            "error", "target_site_overlap", second_id,
+            "target " + ", ".join(str(p) for p in sorted(positions)[:6]),
+            f"与 {first_id} 的目标臂重叠 {len(positions)} nt",
+            "26 nt 臂首尾相接可以，重叠不行（环状跨原点处也一样）",
+        ))
     return issues
 
 
@@ -654,6 +690,8 @@ def run_validation(
     scaffold_arm = int(staple_cfg.get("scaffold_binding_length") or scaffold_arm)
     target_arm = int(staple_cfg.get("target_binding_length") or target_arm)
     domain_order = str(staple_cfg.get("domain_order") or domain_order)
+    if domain_order not in ("5p_target_26", "5p_scaffold_13"):
+        raise ValueError(f"配置里 domain_order 非法：{domain_order!r}")
     T = len(bundle.target_sequence)
 
     issues: list[Issue] = []
@@ -668,6 +706,10 @@ def run_validation(
             "issues": len(found),
         })
 
+    if not bundle.staples:
+        issues.append(Issue("error", "no_staples", "-", "-",
+                            "staples.csv 为空：没有任何 staple",
+                            "重新生成 staple；空设计不应判定为通过"))
     record("sequence_basics", [
         issue
         for item in list(bundle.oligos) + list(bundle.staples)

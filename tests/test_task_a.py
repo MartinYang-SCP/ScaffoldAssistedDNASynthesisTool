@@ -112,8 +112,11 @@ class TestCircularSubsequence(unittest.TestCase):
 
 
 class TestNormalizeAndCheck(unittest.TestCase):
-    def test_strips_whitespace_and_digits(self) -> None:
-        self.assertEqual(normalize_sequence("acgt\n  12 acgt\n"), "ACGTACGT")
+    def test_strips_whitespace_but_not_digits(self) -> None:
+        self.assertEqual(normalize_sequence("acgt\n  acgt\n"), "ACGTACGT")
+        # 数字不再静默删除：FASTA 序列不含行号，数字是非法输入
+        with self.assertRaises(ValueError):
+            normalize_sequence("acgt 12 acgt")
 
     def test_case_folding(self) -> None:
         self.assertEqual(normalize_sequence("acgtACGT"), "ACGTACGT")

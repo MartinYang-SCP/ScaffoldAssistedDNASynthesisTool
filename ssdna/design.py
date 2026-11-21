@@ -24,14 +24,18 @@ from .sequence import get_circular_subsequence, normalize_sequence, reverse_comp
 
 __all__ = [
     "DesignInputs",
+    "DEFAULT_CONFIG",
     "load_config",
     "find_missing",
+    "find_invalid",
     "design_target_oligos",
     "design_staples",
+    "build_nicks",
     "check_design",
     "run_design",
     "to_report",
-    "DEFAULT_CONFIG",
+    "scan_scaffold_phase",
+    "suggest_oligo_cuts",
 ]
 
 DEFAULT_CONFIG: dict[str, Any] = {
@@ -122,6 +126,68 @@ def find_missing(config: dict[str, Any]) -> list[str]:
 
     walk(config, "")
     return sorted(missing)
+
+
+def find_invalid(config: dict[str, Any]) -> dict[str, str]:
+    """返回**类型/取值域**非法的参数映射（key -> 原因）。
+
+    补充 find_missing 只查"缺没缺"、不查"对不对"的盲区：配置里把数字写成
+    字符串、枚举值拼错、切点越界等，要在这里一步报清，而不是散落在生成流程深处
+    抛难懂的 int()/float() ValueError。
+    """
+    invalid: dict[str, str] = {}
+
+    def fail(key: str, why: str) -> None:
+        invalid[key] = why
+
+    sc = config.get("scaffold", {})
+    if sc.get("strand") not in ("+", "-", None):
+        fail("scaffold.strand", "必须是 '+' 或 '-'")
+    region = sc.get("region")
+    if region not in ("whole", None):
+        if not (isinstance(region, list) and len(region) == 2
+                and all(isinstance(v, int) and not isinstance(v, bool) for v in region)):
+            fail("scaffold.region", "必须是 'whole' 或 [start, end)")
+
+    st = config.get("staple", {})
+    for key in ("scaffold_binding_length", "target_binding_length", "total_length",
+                "covered_start"):
+        value = st.get(key)
+        if value is not None and (isinstance(value, bool) or not isinstance(value, int)):
+            fail(f"staple.{key}", "必须是整数")
+    if st.get("domain_order") not in ("5p_target_26", "5p_scaffold_13", None):
+        fail("staple.domain_order", "必须是 5p_target_26 或 5p_scaffold_13")
+    if st.get("group_pattern") is not None and any(
+        ch not in "AB" for ch in str(st.get("group_pattern"))
+    ):
+        fail("staple.group_pattern", "只能含 A/B")
+    if (st.get("total_length") is not None
+            and isinstance(st.get("scaffold_binding_length"), int)
+            and isinstance(st.get("target_binding_length"), int)
+            and st["total_length"] != st["scaffold_binding_length"] + st["target_binding_length"]):
+        fail("staple.total_length", "必须等于 scaffold_binding_length + target_binding_length")
+
+    tg = config.get("target", {})
+    if tg.get("topology") not in ("circular", "linear", None):
+        fail("target.topology", "必须是 circular 或 linear")
+    cuts = tg.get("oligo_cuts")
+    if cuts is not None:
+        if not isinstance(cuts, list) or any(
+            isinstance(c, bool) or not isinstance(c, int) or c <= 0 for c in cuts
+        ):
+            fail("target.oligo_cuts", "必须是正整数列表")
+    gb = tg.get("group_boundaries")
+    if gb is not None and (not isinstance(gb, list) or len(gb) != 1
+                           or not all(isinstance(v, int) and not isinstance(v, bool) for v in gb)):
+        fail("target.group_boundaries", "必须恰好一个整数（A/B 分界）")
+
+    an = config.get("analysis", {})
+    for key in ("na_mM", "mg_mM", "dnac_nM", "temperature_c"):
+        value = an.get(key)
+        if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float))):
+            fail(f"analysis.{key}", "必须是数字")
+
+    return invalid
 
 
 # --------------------------------------------------------------------------- #
@@ -271,10 +337,6 @@ def design_target_oligos(
     return regions, oligos, checks
 
 
-def _group_end(regions: list[TargetRegion], group: str) -> int:
-    ends = [r.end for r in regions if r.group == group]
-    return max(ends) if ends else 0
-
 
 # --------------------------------------------------------------------------- #
 # 三、Staple 生成
@@ -286,6 +348,7 @@ def design_staples(
     *,
     scaffold_strand: str = "+",
     target_sequence: str | None = None,
+    working_sequence: str | None = None,
 ) -> tuple[list[Staple], list[Check]]:
     """按 13+26 平铺生成 staple。
 
@@ -296,8 +359,12 @@ def design_staples(
     arm_t = int(staple_parameters["target_binding_length"])
     total = int(staple_parameters.get("total_length", arm_s + arm_t))
     pattern = staple_parameters.get("group_pattern", "AB")
+    if not pattern or any(ch not in "AB" for ch in pattern):
+        raise ValueError(f"group_pattern 只能含 A/B，收到 {pattern!r}")
     covered_start = int(staple_parameters.get("covered_start", 0))
     order = staple_parameters.get("domain_order", "5p_target_26")
+    if order not in ("5p_target_26", "5p_scaffold_13"):
+        raise ValueError(f"domain_order 必须是 5p_target_26 或 5p_scaffold_13，收到 {order!r}")
     checks: list[Check] = []
 
     if total != arm_s + arm_t:
@@ -308,7 +375,13 @@ def design_staples(
     if scaffold_strand not in ("+", "-"):
         raise ValueError(f"scaffold_strand 必须是 '+'/'-'，收到 {scaffold_strand!r}")
 
-    working = _orientation(scaffold.sequence, scaffold_strand)
+    # 工作序列：region 子区段时由调用方传入（以工作序列为 0 点），否则用整段定向序列。
+    # 不能用 scaffold.sequence 重新算——否则 region 子区段的坐标会错位。
+    working = (
+        working_sequence
+        if working_sequence is not None
+        else _orientation(scaffold.sequence, scaffold_strand)
+    )
     L = len(working)
 
     # 每组的目标跨度：优先用调用方给的 group_spans（环状目标时从 oligo 反推会被
@@ -346,6 +419,28 @@ def design_staples(
 
     n_by_group = {g: (e - s) // arm_t for g, (s, e) in span.items()}
     n_total = sum(n_by_group.values())
+
+    # 严格校验：分组模式实际给每组分配的条数，必须等于目标跨度要求的条数。
+    # 否则（例如 group_boundaries=[26]，要求 n_A=1/n_B=27，而 AB 交替给 14/14）
+    # 会出现 A 臂铺进 B 区、目标漏铺，产生结构上不可能的序列而不报错。
+    pattern_counts: dict[str, int] = {}
+    for index in range(n_total):
+        group = pattern[index % len(pattern)]
+        pattern_counts[group] = pattern_counts.get(group, 0) + 1
+    for group in ("A", "B"):
+        required = n_by_group.get(group, 0)
+        actual = pattern_counts.get(group, 0)
+        if required != actual:
+            checks.append(Check(
+                "error", "group_pattern_mismatch",
+                f"分组模式 {pattern!r} 给 {group} 组 {actual} 条 staple，"
+                f"但目标跨度要求 {required} 条（n_A={n_by_group.get('A', 0)}, "
+                f"n_B={n_by_group.get('B', 0)}）。请调整 group_boundaries 使两组条数"
+                "只差 1，或改用匹配的分组模式。",
+            ))
+    if any(c.code == "group_pattern_mismatch" for c in checks):
+        return [], checks
+
     covered = arm_s * n_total
     if covered > L:
         checks.append(
@@ -566,6 +661,19 @@ def run_design(
     arm_t = int(staple_cfg["target_binding_length"])
 
     boundaries = target_cfg.get("group_boundaries") or []
+    if len(boundaries) != 1:
+        raise ValueError(
+            f"target.group_boundaries 必须恰好一个元素（A/B 分界），收到 {boundaries!r}"
+        )
+    declared_boundary_count = int(target_cfg.get("boundary_count", 2))
+    if cfg["target"]["topology"] == "circular" and declared_boundary_count != 2:
+        raise ValueError(
+            f"环状拓扑下 boundary_count 应为 2，配置里是 {declared_boundary_count}"
+        )
+    if cfg["target"]["topology"] == "linear" and declared_boundary_count != 1:
+        raise ValueError(
+            f"线性拓扑下 boundary_count 应为 1，配置里是 {declared_boundary_count}"
+        )
     group_defs = []
     prev = 0
     for i, edge in enumerate(list(boundaries) + [inputs.target_length]):
@@ -594,7 +702,9 @@ def run_design(
             "cuts": target_cfg["oligo_cuts"],
             "topology": cfg["target"]["topology"],
             "five_prime_modification": target_cfg.get("five_prime_phosphate") or "unknown",
-            "three_prime_modification": "OH",
+            "three_prime_modification": str(
+                target_cfg.get("three_prime_modification") or "OH"
+            ),
         },
         junction_defs,
     )
@@ -614,6 +724,7 @@ def run_design(
         },
         scaffold_strand=inputs.scaffold_strand,
         target_sequence=inputs.target_sequence,
+        working_sequence=inputs.working_sequence,
     )
     step("check_design")
     nicks = build_nicks(
@@ -714,7 +825,8 @@ def build_nicks(
                 nick_id=nick_id,
                 upstream_oligo=upstream.oligo_id,
                 downstream_oligo=downstream.oligo_id,
-                genomic_or_target_position=upstream.target_end,
+                # 用下游起点（已归一化到 [0, L)），避免跨原点 nick 存成未回绕值
+                genomic_or_target_position=downstream.target_start,
                 five_prime_phosphate=str(
                     override.get("five_prime_phosphate", five_prime_phosphate)
                 ),
@@ -842,6 +954,7 @@ def write_outputs(payload: dict[str, Any], outdir: Path) -> dict[str, Path]:
             "staple_id", "group", "sequence", "scaffold_start", "scaffold_end",
             "scaffold_length", "target_start", "target_end", "target_length",
             "total_length", "domain_order", "scaffold_strand", "target_strand",
+            "tm_scaffold_domain", "tm_target_domain",
         ])
         for s in payload["staples"]:
             row = payload["_sequences"]["staples"][s["staple_id"]]
@@ -850,6 +963,7 @@ def write_outputs(payload: dict[str, Any], outdir: Path) -> dict[str, Path]:
                 s["scaffold_end"], s["scaffold_length"], s["target_start"],
                 s["target_end"], s["target_length"], s["total_length"],
                 s["domain_order"], s["scaffold_strand"], s["target_strand"],
+                row.get("tm_scaffold_domain", ""), row.get("tm_target_domain", ""),
             ])
     paths["staples_csv"] = staple_csv
 
@@ -933,7 +1047,7 @@ def demo_config(base: dict[str, Any]) -> dict[str, Any]:
     cfg["target"].update({
         "source": {"inline": _synthetic_target(728)},
         "group_boundaries": [364],
-        "oligo_cuts": [100, 200, 300, 420, 540, 660],
+        "oligo_cuts": [108, 212, 316, 420, 524, 628],
         "topology": "circular",
         "five_prime_phosphate": "no",
         "intended_ligation": False,
@@ -992,17 +1106,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.scan_phase:
         rows = scan_scaffold_phase(
             scaffold,
-            [],
             {
                 "scaffold_binding_length": int(cfg["staple"]["scaffold_binding_length"]),
                 "target_binding_length": int(cfg["staple"]["target_binding_length"]),
-                "group_pattern": cfg["staple"].get("group_pattern", "AB"),
                 "group_spans": {
                     "A": [0, int(cfg["target"]["group_boundaries"][0])],
                     "B": [int(cfg["target"]["group_boundaries"][0]), inputs.target_length],
                 },
             },
-            target_sequence=inputs.target_sequence,
             scaffold_strand=strand,
             na_mM=float(cfg["analysis"].get("na_mM") or 50.0),
             mg_mM=float(cfg["analysis"].get("mg_mM") or 0.0),
@@ -1040,10 +1151,8 @@ def main(argv: list[str] | None = None) -> int:
 # --------------------------------------------------------------------------- #
 def scan_scaffold_phase(
     scaffold: Scaffold,
-    target_oligos: list[TargetOligo],
     staple_parameters: dict[str, Any],
     *,
-    target_sequence: str,
     scaffold_strand: str = "+",
     step: int = 13,
     na_mM: float = 50.0,
@@ -1065,7 +1174,6 @@ def scan_scaffold_phase(
     L = len(_orientation(scaffold.sequence, scaffold_strand))
     arm_s = int(staple_parameters["scaffold_binding_length"])
     arm_t = int(staple_parameters["target_binding_length"])
-    pattern = staple_parameters.get("group_pattern", "AB")
 
     spans = staple_parameters.get("group_spans") or {}
     n_total = sum((int(e) - int(s)) // arm_t for s, e in spans.values())
@@ -1178,7 +1286,6 @@ def suggest_oligo_cuts(
         f"在 [{min_length}, {max_length}] nt 与接缝避让 {clearance} nt 的约束下切不开 {L} nt 的目标；"
         "请放宽长度区间或减少 staple（接缝太密）"
     )
-    return sorted(cuts)
 
 
 if __name__ == "__main__":  # pragma: no cover

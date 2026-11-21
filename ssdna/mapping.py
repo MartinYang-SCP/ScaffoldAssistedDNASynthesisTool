@@ -26,6 +26,7 @@ from .models import BindingSite, Junction, Nick, Staple, TargetOligo, TargetRegi
 from .sequence import get_circular_subsequence, reverse_complement
 
 __all__ = [
+    "Check",
     "PlanConfig",
     "AssemblyPlan",
     "plan_assembly",
@@ -249,7 +250,7 @@ def plan_assembly(cfg: PlanConfig) -> AssemblyPlan:
                 scaffold_binding_region=scaffold_site,
                 target_binding_region=target_site,
                 sequence=sequence,
-                domain_order="5p_target_26",
+                domain_order=cfg.staple_domain_order,
                 placeholder=cfg.placeholder,
             )
         )
@@ -298,12 +299,16 @@ def plan_assembly(cfg: PlanConfig) -> AssemblyPlan:
             ),
             None,
         )
+        if position % cfg.target_length == 0:
+            upstream_group, downstream_group = "B", "A"
+        else:
+            upstream_group, downstream_group = "A", "B"
         plan.junctions.append(
             Junction(
                 junction_id=f"J{ordinal}",
                 position=position % cfg.target_length,
-                upstream_group="A",
-                downstream_group="B",
+                upstream_group=upstream_group,
+                downstream_group=downstream_group,
                 upstream_end="3'",
                 downstream_end="5'",
                 covered_by=covered_by,
@@ -325,7 +330,7 @@ def plan_assembly(cfg: PlanConfig) -> AssemblyPlan:
                 downstream_oligo=nxt.oligo_id,
                 genomic_or_target_position=position,
                 five_prime_phosphate=cfg.five_prime_phosphate,
-                three_prime_hydroxyl="yes",
+                three_prime_hydroxyl="unknown",
                 intended_ligation=cfg.intended_ligation,
                 ligation_state="planned" if cfg.intended_ligation else "none",
             )
@@ -345,7 +350,8 @@ def _normalize_interval(start: int, end: int, length: int) -> list[tuple[int, in
     pieces: list[tuple[int, int]] = []
     start %= length
     end %= length
-    if start < end and end - start == 0:
+    if start == end:
+        # 整圈（或空区间）：按整圈处理
         return [(0, length)]
     if start < end:
         return [(start, end)]
@@ -417,15 +423,27 @@ def validate_plan(plan: AssemblyPlan) -> list[Check]:
             f"覆盖长度 {cfg.covered_length} 超过 scaffold 长度 {cfg.scaffold_length}",
         )
 
-    # 3) 每组目标长度必须是 26 的整数倍，且与 staple 条数匹配
+    # 3) 组长度与 26 nt 臂条数的关系：臂越界或漏铺才算错，余数 < 26 只是没铺满的尾巴
     for group, region_length in (("A", cfg.target_A_length), ("B", cfg.target_B_length)):
         count = len(plan.staples_of(group))
-        expected = count * cfg.target_arm
-        if region_length != expected:
+        covered = count * cfg.target_arm
+        if region_length < covered:
             err(
                 "group_length",
-                f"{group} 组长度 {region_length} nt ≠ 26 × {count} = {expected} nt"
-                "（26 nt 臂若首尾相接平铺，两者必须相等）",
+                f"{group} 组长度 {region_length} nt 小于 {count} 条 26 nt 臂所需的 {covered} nt"
+                "（臂会越界铺进别的区域）",
+            )
+        elif region_length - covered >= cfg.target_arm:
+            err(
+                "group_length",
+                f"{group} 组长度 {region_length} nt 比 {count} 条臂多出 "
+                f"{region_length - covered} nt，至少还能再铺一条 26 nt 臂",
+            )
+        elif region_length != covered:
+            note(
+                "uncovered_target_tail",
+                f"{group} 组末尾 {region_length - covered} nt 不被 26 nt 臂覆盖"
+                "（可以留作交界 linker）",
             )
 
     # 4) 严格交替的分组模式 ⇒ 两组条数只差 1
@@ -507,7 +525,7 @@ def validate_plan(plan: AssemblyPlan) -> list[Check]:
     if plan.is_circular and not plan.circle_closed:
         note(
             "not_covalently_closed",
-            "目标链是环状但尚未共价闭合：所有 nick 的 intended_ligation 都为 False"
+            "目标链是环状但尚未共价闭合：尚无任何 nick 的 ligation_state == 'ligated'"
             "（序列被连续覆盖 ≠ 已经连成环）",
         )
 

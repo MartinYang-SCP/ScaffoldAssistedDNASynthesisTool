@@ -278,6 +278,8 @@ def load_snapgene(
     scaffold_id:
         默认用文件名（不含扩展名）。
     """
+    if backend not in ("auto", "biopython", "raw"):
+        raise ValueError(f"backend 必须是 auto/biopython/raw，收到 {backend!r}")
     path = pathlib.Path(path)
     if not path.exists():
         raise FileNotFoundError(f"找不到文件：{path}")
@@ -384,7 +386,7 @@ def load_fasta(
     records: list[tuple[str, str]] = []
     header: str | None = None
     chunks: list[str] = []
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in path.read_text(encoding="utf-8-sig").splitlines():
         line = line.strip()
         if not line:
             continue
@@ -414,7 +416,9 @@ def load_fasta(
     else:
         matched = [(h, t) for h, t in records if h.split()[0] == record_id]
         if not matched:
-            raise KeyError(f"记录 {record_id!r} 不存在")
+            raise ValueError(f"记录 {record_id!r} 不存在")
+        if len(matched) > 1:
+            raise ValueError(f"记录 {record_id!r} 出现 {len(matched)} 次，无法确定要读哪一条")
         header, text = matched[0]
 
     sequence = normalize_sequence(text)

@@ -53,17 +53,23 @@ def _resolve_region(scaffold, cfg: dict[str, Any], strand: str):
     """按 ``scaffold.region`` 取工作序列。
 
     区域坐标是**文件坐标**（先按区域切，再按 strand 定向）；``"whole"`` 表示整段。
-    不接受空值以外的模糊写法——配置校验已经保证它非 null。
+    空区间 ``[a, a)`` 显式报错；线性 scaffold 不支持跨原点。
     """
     from ssdna.sequence import get_circular_subsequence
 
     region = cfg["scaffold"]["region"]
+    circular = scaffold.topology == "circular"
     if region == "whole":
         return _orient(scaffold.sequence, strand), "whole", None
     if isinstance(region, (list, tuple)) and len(region) == 2:
         start, end = int(region[0]), int(region[1])
-        length = (end - start) % len(scaffold.sequence) or len(scaffold.sequence)
-        piece = get_circular_subsequence(scaffold.sequence, start, length)
+        if end == start:
+            raise ValueError(f"scaffold.region 区间为空 [{start}, {end})，长度必须 > 0")
+        length = (end - start) % len(scaffold.sequence)
+        if length == 0:
+            length = len(scaffold.sequence)  # 整段，等价 whole
+        piece = get_circular_subsequence(scaffold.sequence, start, length,
+                                         circular=circular)
         return _orient(piece, strand), "subregion", (start, end)
     raise ValueError(
         f"scaffold.region 必须是 'whole' 或 [start, end)，收到 {region!r}"
@@ -93,10 +99,16 @@ def run(config_path: pathlib.Path, *, verbose: bool = True) -> int:
     say("[1/8] 读取设计参数并校验完整性 …")
     cfg = design.load_config(config_path)
     missing = design.find_missing(cfg)
-    if missing:
-        say(f"  缺少 {len(missing)} 个必需参数，流程在这里停止：")
-        for key in missing:
-            say(f"    - {key}")
+    invalid = design.find_invalid(cfg)
+    if missing or invalid:
+        if missing:
+            say(f"  缺少 {len(missing)} 个必需参数：")
+            for key in missing:
+                say(f"    - {key}")
+        if invalid:
+            say(f"  {len(invalid)} 个参数值非法：")
+            for key, why in invalid.items():
+                say(f"    - {key}: {why}")
         say("  未读取 scaffold、未读取目标、未生成任何序列、未创建输出目录。")
         return 2
     say("  参数齐备")

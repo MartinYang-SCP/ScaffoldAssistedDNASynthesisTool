@@ -1,14 +1,17 @@
 """scaffold–staple 目标片段组装设计工具。
 
-当前阶段：**输入层（Task A）**。只读文件、建数据模型、出报告，不生成任何设计序列。
+一条约 1.2 kb 的环状单链 scaffold，用统一设计的 39 nt staple
+（13 nt 贴 scaffold + 26 nt 贴目标）把由多条 oligo 组成的目标片段定位并闭合成环。
 
-公共 API
---------
->>> from ssdna import load_snapgene, export_all
->>> scaffold = load_snapgene("minimalplasmid(1).dna")
->>> scaffold.length, scaffold.topology
-(1200, 'circular')
->>> paths = export_all(scaffold, "outputs")
+模块分四层：
+
+* 输入层：``io`` / ``snapgene_raw``（SnapGene 双解析器交叉校验）、``sequence``；
+* 数据模型：``models``（Scaffold / Feature / TargetRegion / TargetOligo / Staple /
+  Nick / Junction）；
+* 装配与生成：``mapping``（结构模型）、``design``（序列生成引擎 + 切点建议 + 相位扫描）；
+* 验证与报告：``validate``（独立验证）、``thermo``（Tm 体检）、``report``（导出）。
+
+唯一入口：``python main.py --config config/design_config.yaml``。
 """
 
 from __future__ import annotations
@@ -41,53 +44,60 @@ from .sequence import (
     reverse_complement,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "__version__",
-    "Scaffold",
-    "Feature",
-    "Primer",
-    "Segment",
-    "BindingSite",
-    "TargetRegion",
-    "TargetOligo",
-    "Staple",
-    "Nick",
-    "Junction",
-    "PlanConfig",
-    "AssemblyPlan",
-    "plan_assembly",
-    "toy_plan",
-    "to_structure_json",
-    "load_snapgene",
-    "load_fasta",
-    "BackendUnavailable",
-    "reverse_complement",
-    "normalize_sequence",
-    "check_sequence",
-    "get_circular_subsequence",
-    "gc_content",
-    "build_info",
-    "export_all",
-    "write_fasta",
-    "write_features_csv",
-    "write_info_json",
+    # 数据模型
+    "Scaffold", "Feature", "Primer", "Segment", "BindingSite",
+    "TargetRegion", "TargetOligo", "Staple", "Nick", "Junction",
+    # 结构模型（mapping）
+    "Check", "PlanConfig", "AssemblyPlan", "plan_assembly", "validate_plan",
+    "toy_plan", "to_structure_json",
+    # 输入
+    "load_snapgene", "load_fasta", "BackendUnavailable",
+    # 序列
+    "reverse_complement", "normalize_sequence", "check_sequence",
+    "get_circular_subsequence", "gc_content",
+    # 生成
+    "design_target_oligos", "design_staples", "build_nicks", "check_design",
+    "run_design", "scan_scaffold_phase", "suggest_oligo_cuts",
+    "load_config", "find_missing", "find_invalid",
+    # 验证
+    "validate_plan", "run_validation",
+    # 报告
+    "build_info", "export_all", "write_fasta", "write_features_csv", "write_info_json",
 ]
 
-_MAPPING_EXPORTS = {
-    "AssemblyPlan",
-    "PlanConfig",
-    "plan_assembly",
-    "toy_plan",
-    "to_structure_json",
+# 按需导入：mapping / design / validate 里都有主流程，避免 `python -m ssdna.x` 时重复导入
+_LAZY_EXPORTS = {
+    "Check": ("ssdna.mapping", "Check"),
+    "PlanConfig": ("ssdna.mapping", "PlanConfig"),
+    "AssemblyPlan": ("ssdna.mapping", "AssemblyPlan"),
+    "plan_assembly": ("ssdna.mapping", "plan_assembly"),
+    "validate_plan": ("ssdna.mapping", "validate_plan"),
+    "toy_plan": ("ssdna.mapping", "toy_plan"),
+    "to_structure_json": ("ssdna.mapping", "to_structure_json"),
+    "design_target_oligos": ("ssdna.design", "design_target_oligos"),
+    "design_staples": ("ssdna.design", "design_staples"),
+    "build_nicks": ("ssdna.design", "build_nicks"),
+    "check_design": ("ssdna.design", "check_design"),
+    "run_design": ("ssdna.design", "run_design"),
+    "scan_scaffold_phase": ("ssdna.design", "scan_scaffold_phase"),
+    "suggest_oligo_cuts": ("ssdna.design", "suggest_oligo_cuts"),
+    "load_config": ("ssdna.design", "load_config"),
+    "find_missing": ("ssdna.design", "find_missing"),
+    "find_invalid": ("ssdna.design", "find_invalid"),
+    "run_validation": ("ssdna.validate", "run_validation"),
 }
 
 
 def __getattr__(name: str):
-    """装配层按需导入：避免 ``python -m ssdna.mapping`` 时的重复导入。"""
-    if name in _MAPPING_EXPORTS:
-        from . import mapping
+    """按需导入，避免 ``python -m ssdna.mapping`` / ``ssdna.design`` 的重复导入。"""
+    if name in _LAZY_EXPORTS:
+        import importlib
 
-        return getattr(mapping, name)
+        module_name, attr = _LAZY_EXPORTS[name]
+        module = importlib.import_module(module_name)
+        return getattr(module, attr)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

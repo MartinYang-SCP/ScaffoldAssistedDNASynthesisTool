@@ -222,17 +222,18 @@ def parse_feature_ranges(segment_element: ET.Element) -> Segment:
 
     SnapGene 写的是 1-based 闭区间；跨原点时写成 ``end < start`` 的形式。
     """
-    raw = segment_element.attrib["range"]
-    a_str, b_str = raw.split("-")
-    a, b = int(a_str), int(b_str)
+    raw = segment_element.attrib.get("range")
+    try:
+        if raw is None:
+            raise ValueError("缺少 range 属性")
+        a_str, b_str = raw.split("-")
+        a, b = int(a_str), int(b_str)
+    except (ValueError, AttributeError) as exc:
+        raise SnapGeneError(f"特征区间 {raw!r} 无法解析：{exc}") from exc
     # 1-based 闭区间 [a, b] -> 0-based 半开 [a-1, b)
     start, end = a - 1, b
     return Segment(start=start, end=end, strand=".", wraps=end <= start, raw=raw)
 
-
-def _text_of(elem: ET.Element, path: str) -> str:
-    found = elem.find(path)
-    return found.text if found is not None and found.text else ""
 
 
 def _html_to_text(html: str) -> str:
@@ -240,7 +241,10 @@ def _html_to_text(html: str) -> str:
 
 
 def _parse_features(xml_bytes: bytes) -> list[Feature]:
-    root = ET.fromstring(xml_bytes)
+    try:
+        root = ET.fromstring(xml_bytes)
+    except ET.ParseError as exc:
+        raise SnapGeneError(f"特征 XML 块解析失败：{exc}") from exc
     features: list[Feature] = []
     for el in root.iter("Feature"):
         directionality = el.attrib.get("directionality", "")
@@ -274,7 +278,10 @@ def _parse_features(xml_bytes: bytes) -> list[Feature]:
 
 
 def _parse_primers(xml_bytes: bytes) -> list[Primer]:
-    root = ET.fromstring(xml_bytes)
+    try:
+        root = ET.fromstring(xml_bytes)
+    except ET.ParseError as exc:
+        raise SnapGeneError(f"引物 XML 块解析失败：{exc}") from exc
     primers: list[Primer] = []
     for el in root.iter("Primer"):
         primers.append(
@@ -290,7 +297,10 @@ def _parse_primers(xml_bytes: bytes) -> list[Primer]:
 
 
 def _parse_notes(xml_bytes: bytes) -> tuple[dict[str, str], str]:
-    root = ET.fromstring(xml_bytes)
+    try:
+        root = ET.fromstring(xml_bytes)
+    except ET.ParseError as exc:
+        raise SnapGeneError(f"备注 XML 块解析失败：{exc}") from exc
     notes: dict[str, str] = {}
     sequence_class = ""
     for child in root:
@@ -335,9 +345,14 @@ def read_snapgene(path: str | Path) -> SnapGeneFile:
         if btype == 0:
             # 序列块：data[0] 为标志位（bit0 = 环状），其后紧跟序列本身，
             # 不含额外的长度字段；长度由块长度决定。
+            if not data:
+                raise SnapGeneError("type=0 序列块为空")
             flags = data[0]
             record.topology = "circular" if flags & 0x01 else "linear"
-            record.sequence = data[1:].decode("ascii")
+            try:
+                record.sequence = data[1:].decode("ascii")
+            except UnicodeDecodeError as exc:
+                raise SnapGeneError(f"序列块含非 ASCII 字节：{exc}") from exc
             record.length = len(record.sequence)
         elif btype == 10:
             record.features = _parse_features(data)
@@ -363,7 +378,7 @@ def read_snapgene(path: str | Path) -> SnapGeneFile:
 def validate(record: SnapGeneFile) -> list[str]:
     """结构性自检；只报告，不修改任何数据。"""
     warnings: list[str] = []
-    bad = sorted(set(record.sequence) - VALID_BASES)
+    bad = sorted(set(record.sequence.upper()) - VALID_BASES)
     if bad:
         warnings.append(f"序列含非标准碱基字符：{bad}")
     if record.topology == "unknown":

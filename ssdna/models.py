@@ -283,7 +283,7 @@ class Staple:
 
     @property
     def total_length(self) -> int:
-        return self.scaffold_binding_region.length + self.target_binding.length
+        return self.scaffold_binding_region.length + self.target_binding_region.length
 
 
 @dataclass

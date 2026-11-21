@@ -230,45 +230,34 @@ class TestValidate(unittest.TestCase):
         self.assertIn("翻译", warnings[0])
 
 
-class TestProjectParams(unittest.TestCase):
-    """参数清单必须显式留空，校验器必须拒绝带空的参数。"""
+class TestCheckParams(unittest.TestCase):
+    """权威配置只有 config/design_config.yaml；缺参/非法参都会被拦截。"""
 
     def setUp(self) -> None:
-        self.params_path = ROOT / "params" / "project.params.json"
-        self.params = json.loads(self.params_path.read_text(encoding="utf-8"))
+        from ssdna.design import load_config as _lc
+        self.config = _lc(ROOT / "config" / "design_config.yaml")
 
-    def test_sequence_sha256_in_params_matches_the_sequence(self) -> None:
-        """身份校验用**序列** hash：文件被 SnapGene 重新保存时字节 hash 会变，序列不会。"""
-        record = read_snapgene(DNA_FILE)
-        self.assertEqual(
-            self.params["inputs"]["scaffold_sequence_sha256"],
-            hashlib.sha256(record.sequence.encode("ascii")).hexdigest(),
-        )
+    def test_template_is_blocked(self) -> None:
+        blocked = check_params.blocking(self.config)
+        self.assertIn("scaffold.strand", blocked)
+        self.assertIn("scaffold.region", blocked)
+        self.assertIn("target.source", blocked)
+        self.assertIn("target.oligo_cuts", blocked)
 
-    def test_file_sha256_is_recorded(self) -> None:
-        self.assertEqual(
-            self.params["inputs"]["scaffold_file_sha256"],
-            hashlib.sha256(DNA_FILE.read_bytes()).hexdigest(),
-        )
+    def test_demo_config_is_clean(self) -> None:
+        from ssdna.design import load_config as _lc
+        demo = _lc(ROOT / "config" / "design_config.demo.yaml")
+        self.assertEqual(check_params.blocking(demo), [])
 
-    def test_unresolved_params_are_blocking(self) -> None:
-        pending = check_params.blocking(self.params)
-        self.assertGreaterEqual(len(pending), 25)
-        keys = {key for key, _ in pending}
-        self.assertIn("scaffold.strand", keys)
-        self.assertIn("target.circle_length", keys)
-        # 已在 v2 结构确认中定下来的几何参数，不应再阻塞
-        self.assertNotIn("geometry.target_vs_scaffold", keys)
-        self.assertNotIn("staple.scaffold_pitch", keys)
-
-    def test_output_section_is_not_blocking(self) -> None:
-        pending = {key for key, _ in check_params.blocking(self.params)}
-        self.assertFalse([key for key in pending if key.startswith("output.")])
+    def test_invalid_values_are_blocked(self) -> None:
+        bad = dict(self.config)
+        bad["staple"] = dict(self.config["staple"], scaffold_binding_length="abc")
+        self.assertIn("staple.scaffold_binding_length", check_params.blocking(bad))
 
     def test_cli_exit_code_is_two_when_blocked(self) -> None:
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
-            code = check_params.main([str(self.params_path)])
+            code = check_params.main([str(ROOT / "config" / "design_config.yaml")])
         self.assertEqual(code, 2)
         self.assertIn("阻塞项", buffer.getvalue())
 

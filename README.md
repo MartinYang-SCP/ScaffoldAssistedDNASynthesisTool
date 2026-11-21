@@ -38,6 +38,7 @@
 | D | 独立验证模块 + 热力学接口 | [05_TaskD_验证模块.md](docs/05_TaskD_验证模块.md) |
 | E | 整合 / 测试 / 交付 | 本 README + `main.py` |
 | — | 外部评审意见处理 | [07_评审意见处理.md](docs/07_评审意见处理.md) |
+| — | pro 模型审核 / 改进 | [08_审核报告.md](docs/08_审核报告.md) |
 
 **尚未生成任何真实实验序列**：默认配置里的关键参数都是 `null`，程序会在第 1 步停下并列出缺失项（现在是 8 项）。
 
@@ -105,7 +106,6 @@ python -m unittest discover -s tests -v                # 196 个测试
 ├── tests/                       196 个单元测试
 ├── outputs/                     运行产物（demo / validation）
 ├── docs/                        各阶段报告 + 5 张图
-├── params/                      参数清单（JSON）与 design_config 旧版模板
 └── requirements.txt
 ```
 

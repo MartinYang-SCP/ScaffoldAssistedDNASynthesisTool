@@ -325,13 +325,11 @@ class TestPhaseScan(unittest.TestCase):
         cfg, inputs = demo_inputs()
         rows = design.scan_scaffold_phase(
             inputs.scaffold,
-            [],
             {
                 "scaffold_binding_length": 13,
                 "target_binding_length": 26,
                 "group_spans": {"A": [0, 364], "B": [364, 728]},
             },
-            target_sequence=inputs.target_sequence,
             step=13,
         )
         self.assertGreater(len(rows), 10)
@@ -349,10 +347,10 @@ class TestPhaseScan(unittest.TestCase):
         cfg, inputs = demo_inputs()
         before = set(p.name for p in (TMP / "out").glob("*")) if (TMP / "out").exists() else set()
         design.scan_scaffold_phase(
-            inputs.scaffold, [],
+            inputs.scaffold,
             {"scaffold_binding_length": 13, "target_binding_length": 26,
              "group_spans": {"A": [0, 364], "B": [364, 728]}},
-            target_sequence=inputs.target_sequence, step=13,
+            step=13,
         )
         after = set(p.name for p in (TMP / "out").glob("*")) if (TMP / "out").exists() else set()
         self.assertEqual(before, after)

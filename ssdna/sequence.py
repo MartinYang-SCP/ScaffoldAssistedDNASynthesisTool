@@ -39,35 +39,41 @@ def reverse_complement(sequence: str) -> str:
     """
     if not isinstance(sequence, str):
         raise TypeError("sequence 必须是 str")
+    bad = sorted(set(sequence.upper()) - ALLOWED_BASES)
+    if bad:
+        raise ValueError(
+            f"序列含无法互补的字符 {bad}；只接受 ACGT 及 IUPAC 简并码"
+        )
     return sequence.translate(_COMPLEMENT)[::-1]
 
 
 def normalize_sequence(sequence: str) -> str:
-    """去空白与 FASTA 行号数字，统一大写。
+    """去空白、统一大写。
 
-    只改变**书写形式**，不改变任何一个碱基。含非法字符时报错并给出位置，
-    不做去除、不替换成 N。
+    只改变**书写形式**，不改变任何一个碱基。数字、非法字母都报错并给位置，
+    不做去除、不替换成 N——"静默删掉数字"会掩盖用户输入里的错误。
     """
     if not isinstance(sequence, str):
         raise TypeError("sequence 必须是 str")
 
     kept: list[str] = []
-    removed: list[int] = []
-    for index, char in enumerate(sequence):
-        if char.isspace() or char.isdigit():
-            removed.append(index)
+    for char in sequence:
+        if char.isspace():
             continue
         kept.append(char)
 
     if not kept:
-        raise ValueError("序列为空（去除空白与数字后没有剩余字符）")
+        raise ValueError("序列为空（去除空白后没有剩余字符）")
 
     text = "".join(kept).upper()
     bad = sorted(set(text) - ALLOWED_BASES)
     if bad:
         positions = [i for i, ch in enumerate(text) if ch in bad][:10]
+        hint = "（含数字？FASTA 序列不含行号，数字视为非法）" if any(
+            ch.isdigit() for ch in bad
+        ) else ""
         raise ValueError(
-            f"序列含非法碱基字符 {bad}；示例位置（归一化后 0-based）：{positions}。"
+            f"序列含非法碱基字符 {bad}{hint}；示例位置（归一化后 0-based）：{positions}。"
             "不做替换、不丢弃，请先修正输入。"
         )
     return text
@@ -75,6 +81,8 @@ def normalize_sequence(sequence: str) -> str:
 
 def check_sequence(sequence: str) -> list[str]:
     """非致命提示清单；不修改任何数据。"""
+    if not isinstance(sequence, str):
+        raise TypeError("sequence 必须是 str")
     warnings: list[str] = []
     if not sequence:
         warnings.append("序列为空")
@@ -85,7 +93,7 @@ def check_sequence(sequence: str) -> list[str]:
     if bad:
         warnings.append(f"含非法碱基字符：{bad}")
 
-    degenerate = sorted(set(upper) - CANONICAL_BASES - set("-"))
+    degenerate = sorted(set(upper) & (ALLOWED_BASES - CANONICAL_BASES))
     if degenerate:
         warnings.append(f"含简并碱基 {degenerate}（可合成性/配对需单独处理）")
 
@@ -108,6 +116,10 @@ def get_circular_subsequence(
         raise TypeError("sequence 必须是 str")
     if not sequence:
         raise ValueError("序列为空")
+    if isinstance(start, bool) or not isinstance(start, int):
+        raise TypeError(f"start 必须是整数，收到 {start!r}")
+    if isinstance(length, bool) or not isinstance(length, int):
+        raise TypeError(f"length 必须是整数，收到 {length!r}")
     if length < 0:
         raise ValueError(f"length 不能为负：{length}")
 

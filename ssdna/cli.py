@@ -42,7 +42,10 @@ def main(argv: list[str] | None = None) -> int:
     else:
         if not args.path:
             raise SystemExit("请给出输入文件，或用 --fasta 指定")
-        if Path(args.path).suffix.lower() in {".fa", ".fasta", ".fna"}:
+        source = Path(args.path)
+        if source.is_dir():
+            raise SystemExit(f"{args.path} 是目录，请给出 .dna 或 .fasta 文件")
+        if source.suffix.lower() in {".fa", ".fasta", ".fna"}:
             scaffold = load_fasta(
                 args.path, record_id=args.scaffold_id, topology=args.topology
             )
@@ -74,11 +77,6 @@ def main(argv: list[str] | None = None) -> int:
     for name, path in paths.items():
         print(f"  -> {name:12s} {path}")
 
-    # JSON 是否省略序列
-    if args.no_sequence:
-        from .report import write_info_json
-
-        write_info_json(scaffold, paths["info_json"], include_sequence=False)
     return 0
 
 

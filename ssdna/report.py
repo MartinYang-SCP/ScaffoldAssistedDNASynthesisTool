@@ -139,14 +139,17 @@ def write_fasta(
 ) -> pathlib.Path:
     path = pathlib.Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
+    import re as _re
+
+    source_name = _re.sub(r"[^\x20-\x7e]", "_", pathlib.Path(scaffold.source).name)
     header = (
         f">{scaffold.id} length={scaffold.length} topology={scaffold.topology} "
-        f"source={pathlib.Path(scaffold.source).name} sha256={scaffold.sequence_sha256[:12]}"
+        f"source={source_name} sha256={scaffold.sequence_sha256[:12]}"
     )
     lines = [header]
     for i in range(0, scaffold.length, width):
         lines.append(scaffold.sequence[i : i + width])
-    path.write_text("\n".join(lines) + "\n", encoding="ascii")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
 
 
